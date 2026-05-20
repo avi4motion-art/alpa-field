@@ -428,7 +428,7 @@ input,select,textarea,button{font-family:'Heebo',sans-serif}
         <div id="aiMsgs" style="display:flex;flex-direction:column;gap:10px;min-height:200px;margin-bottom:12px">
           <div style="display:flex;gap:8px">
             <div style="width:30px;height:30px;border-radius:50%;background:var(--pink);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0">A</div>
-            <div style="background:#fff;border-radius:12px;border-top-right-radius:3px;padding:10px 13px;font-size:13px;line-height:1.6;box-shadow:0 1px 4px rgba(0,0,0,.06);max-width:85%">שלום! אני העוזר החכם של ALPA 👋<br>אני יכול לענות על שאלות ועוד. מה אפשר לעזור?</div>
+            <div style="background:#fff;border-radius:12px;border-top-right-radius:3px;padding:10px 13px;font-size:13px;line-height:1.6;box-shadow:0 1px 4px rgba(0,0,0,.06);max-width:85%">שלום! אני העוזר החכם של ALPA 👋<br>מה אפשר לעזור?</div>
           </div>
         </div>
         <div id="aiImgPrev" style="display:none;margin-bottom:8px;align-items:center;gap:8px">
@@ -459,6 +459,142 @@ input,select,textarea,button{font-family:'Heebo',sans-serif}
       </div>
     </div>
   </div>
+
+  <!-- DOCS PANEL -->
+  <div class="panel" id="panelDocs">
+    <div style="max-width:560px;margin:0 auto">
+      <div id="docsAdminBar" style="display:none;margin-bottom:12px">
+        <div class="acard" style="margin-bottom:0">
+          <h3>📁 ניהול מידע</h3>
+          <p>הוסף קטגוריות ולינקים לעובדים</p>
+          <button class="btn-a pri" onclick="openCatModal()" style="width:100%">➕ קטגוריה חדשה</button>
+        </div>
+      </div>
+      <div id="docsList"><div class="ld-s">טוען...</div></div>
+    </div>
+    <div id="catModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:600;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px)">
+      <div style="background:#fff;border-radius:24px 24px 0 0;width:100%;max-width:600px;max-height:90vh;overflow-y:auto;padding:1.4rem">
+        <div style="width:36px;height:4px;background:var(--gray2);border-radius:2px;margin:0 auto 1.1rem"></div>
+        <div style="font-size:18px;font-weight:700;margin-bottom:4px" id="catModalTitle">קטגוריה חדשה</div>
+        <div class="f-lbl">שם קטגוריה</div>
+        <input class="f-in" id="catName" placeholder="מבצעי החודש, פלנוגרמות..."/>
+        <div class="f-lbl">אייקון</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px">
+          <span style="font-size:22px;cursor:pointer;padding:4px 6px;border-radius:8px;border:2px solid transparent" onclick="pickCatIco(this)" data-i="📢">📢</span>
+          <span style="font-size:22px;cursor:pointer;padding:4px 6px;border-radius:8px;border:2px solid transparent" onclick="pickCatIco(this)" data-i="📋">📋</span>
+          <span style="font-size:22px;cursor:pointer;padding:4px 6px;border-radius:8px;border:2px solid transparent" onclick="pickCatIco(this)" data-i="🗺️">🗺️</span>
+          <span style="font-size:22px;cursor:pointer;padding:4px 6px;border-radius:8px;border:2px solid transparent" onclick="pickCatIco(this)" data-i="📦">📦</span>
+          <span style="font-size:22px;cursor:pointer;padding:4px 6px;border-radius:8px;border:2px solid transparent" onclick="pickCatIco(this)" data-i="💰">💰</span>
+          <span style="font-size:22px;cursor:pointer;padding:4px 6px;border-radius:8px;border:2px solid transparent" onclick="pickCatIco(this)" data-i="📞">📞</span>
+          <span style="font-size:22px;cursor:pointer;padding:4px 6px;border-radius:8px;border:2px solid transparent" onclick="pickCatIco(this)" data-i="🎯">🎯</span>
+          <span style="font-size:22px;cursor:pointer;padding:4px 6px;border-radius:8px;border:2px solid transparent" onclick="pickCatIco(this)" data-i="📊">📊</span>
+          <span style="font-size:22px;cursor:pointer;padding:4px 6px;border-radius:8px;border:2px solid transparent" onclick="pickCatIco(this)" data-i="📝">📝</span>
+        </div>
+        <div class="f-lbl" style="margin-top:1rem">לינקים וקבצים</div>
+        <div id="linksList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:8px"></div>
+        <button onclick="addLinkRow()" style="background:none;border:1.5px dashed var(--gray2);border-radius:10px;padding:9px;width:100%;font-size:13px;color:var(--gray3);cursor:pointer;font-family:Heebo,sans-serif">➕ הוסף לינק</button>
+        <div class="f-lbl" style="margin-top:1rem">הערה (אופציונלי)</div>
+        <textarea class="f-in f-ta" id="catNote" placeholder="פרטים נוספים..."></textarea>
+        <div style="display:flex;gap:10px;margin-top:1.2rem">
+          <button class="btn-a" onclick="closeCatModal()" style="flex:1">ביטול</button>
+          <button class="btn-a pri" onclick="saveCat()" style="flex:2">שמור</button>
+        </div>
+        <button id="deleteCatBtn" onclick="deleteCat()" style="display:none;width:100%;margin-top:8px;background:none;border:none;color:#dc2626;font-size:13px;cursor:pointer;font-family:Heebo,sans-serif">🗑️ מחק קטגוריה</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TICKETS PANEL -->
+  <div class="panel" id="panelTickets">
+    <div style="max-width:600px;margin:0 auto">
+
+      <!-- Worker: new ticket -->
+      <div id="ticketNewWrap" class="acard" style="margin-bottom:12px">
+        <h3>📩 פנייה חדשה למחלקת סחר</h3>
+        <p>בעיה בשטח? שלח פנייה ונטפל בהקדם</p>
+
+        <div class="f-lbl">סוג הפנייה</div>
+        <select class="f-in" id="ticketType">
+          <option value="">— בחר סוג —</option>
+          <option value="בעיית נראות">🖼️ בעיית נראות</option>
+          <option value="בעיית מחיר">💰 בעיית מחיר</option>
+          <option value="מוצר לא נפתח ברשת">🚫 מוצר לא נפתח ברשת</option>
+          <option value="מוצר לא הגיע לסניף">📦 מוצר לא הגיע לסניף</option>
+          <option value="חוסר מלאי">⚠️ חוסר מלאי</option>
+          <option value="בעיה בפלנוגרמה">📋 בעיה בפלנוגרמה</option>
+          <option value="תמחור שגוי">🏷️ תמחור שגוי</option>
+          <option value="אחר">📝 אחר</option>
+        </select>
+
+        <div class="f-lbl">מוצר / מותג</div>
+        <input class="f-in" id="ticketProduct" placeholder="שם המוצר או המותג..."/>
+
+        <div class="f-lbl">פירוט הבעיה</div>
+        <textarea class="f-in f-ta" id="ticketDesc" placeholder="תאר את הבעיה בפירוט..." style="height:90px"></textarea>
+
+        <div class="f-lbl">תמונה (אופציונלי)</div>
+        <div class="img-btns">
+          <div class="img-btn">
+            <input type="file" id="tktCam" accept="image/*" capture="environment" onchange="handleTktImg(this)">
+            <span class="ico">📷</span><div class="lbl">מצלמה</div>
+          </div>
+          <div class="img-btn">
+            <input type="file" id="tktGal" accept="image/*" onchange="handleTktImg(this)">
+            <span class="ico">🖼️</span><div class="lbl">גלריה</div>
+          </div>
+        </div>
+        <div class="pv-wrap">
+          <img id="tktPvImg" class="pv-img">
+          <button class="pv-del" id="tktPvDel" onclick="clearTktImg()">✕</button>
+        </div>
+
+        <button class="btn-sub" onclick="submitTicket()" style="margin-top:1rem">📤 שלח פנייה</button>
+        <div class="toast" id="tktToast">✅ הפנייה נשלחה! נחזור אליך בהקדם.</div>
+      </div>
+
+      <!-- My tickets -->
+      <div class="acard">
+        <h3>📋 הפניות שלי</h3>
+        <p>מעקב אחר פניות קודמות</p>
+        <div id="myTicketsList"><div class="ld-s">טוען...</div></div>
+      </div>
+
+      <!-- Admin: all tickets -->
+      <div id="allTicketsWrap" style="display:none" class="acard">
+        <h3>🗂️ כל הפניות</h3>
+        <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+          <select class="f-in" id="tktFilterStatus" onchange="renderAllTickets()" style="flex:1;margin:0">
+            <option value="">כל הסטטוסים</option>
+            <option value="פתוח">פתוח</option>
+            <option value="בטיפול">בטיפול</option>
+            <option value="נסגר">נסגר</option>
+          </select>
+          <select class="f-in" id="tktFilterType" onchange="renderAllTickets()" style="flex:1;margin:0">
+            <option value="">כל הסוגים</option>
+            <option value="בעיית נראות">נראות</option>
+            <option value="בעיית מחיר">מחיר</option>
+            <option value="מוצר לא נפתח ברשת">לא נפתח</option>
+            <option value="מוצר לא הגיע לסניף">לא הגיע</option>
+            <option value="חוסר מלאי">מלאי</option>
+            <option value="בעיה בפלנוגרמה">פלנוגרמה</option>
+            <option value="תמחור שגוי">תמחור</option>
+            <option value="אחר">אחר</option>
+          </select>
+        </div>
+        <div id="allTicketsList"><div class="ld-s">טוען...</div></div>
+      </div>
+    </div>
+
+    <!-- Ticket detail modal -->
+    <div id="tktModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:600;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px)">
+      <div style="background:#fff;border-radius:24px 24px 0 0;width:100%;max-width:600px;max-height:90vh;overflow-y:auto;padding:1.4rem">
+        <div style="width:36px;height:4px;background:var(--gray2);border-radius:2px;margin:0 auto 1.1rem"></div>
+        <div id="tktModalContent"></div>
+        <button onclick="closeTktModal()" style="width:100%;margin-top:1rem;background:none;border:1.5px solid var(--gray2);border-radius:10px;padding:10px;font-size:13px;cursor:pointer;font-family:Heebo,sans-serif">סגור</button>
+      </div>
+    </div>
+  </div>
+
 <!-- LIGHTBOX -->
 <div id="lightbox" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:900;align-items:center;justify-content:center;padding:1rem" onclick="closeLB()">
   <img id="lbImg" style="max-width:100%;max-height:90vh;border-radius:12px;object-fit:contain">
@@ -565,9 +701,9 @@ function enterApp(user){
 
 function doLogout(){localStorage.removeItem(SK);CU=null;selB=null;imgData=null;selAct=null;repBr=null;document.getElementById('lEmail').value='';document.getElementById('selBox').style.display='none';document.getElementById('svBanner').style.display='none';document.getElementById('orDv').style.display='none';document.getElementById('mainScreen').classList.remove('active');document.getElementById('loginScreen').classList.add('active');}
 
-function buildTabs(){const t=document.getElementById('atabs');t.innerHTML='';[{id:'Upload',l:'📋 דיווח'},{id:'Dash',l:'📊 דשבורד'},{id:'Missing',l:'🔴 חסרים',mgr:true},{id:'History',l:'📅 היסטוריה',mgr:true},{id:'Workers',l:'👥 עובדים',adm:true},{id:'Admin',l:'⚙️ ניהול',adm:true},{id:'AI',l:'🤖 AI'}].filter(x=>(!x.adm||CU.role==='admin')&&(!x.mgr||['admin','area_manager'].includes(CU.role))).forEach(x=>{const b=document.createElement('button');b.className='atab';b.id='t'+x.id;b.textContent=x.l;b.onclick=()=>switchTab(x.id);t.appendChild(b);});}
+function buildTabs(){const t=document.getElementById('atabs');t.innerHTML='';[{id:'Upload',l:'📋 דיווח'},{id:'Dash',l:'📊 דשבורד'},{id:'Missing',l:'🔴 חסרים',mgr:true},{id:'History',l:'📅 היסטוריה',mgr:true},{id:'Workers',l:'👥 עובדים',adm:true},{id:'Admin',l:'⚙️ ניהול',adm:true},{id:'AI',l:'🤖 AI'},{id:'Docs',l:'📁 מידע'},{id:'Tickets',l:'📩 פניות'}].filter(x=>(!x.adm||CU.role==='admin')&&(!x.mgr||['admin','area_manager'].includes(CU.role))).forEach(x=>{const b=document.createElement('button');b.className='atab';b.id='t'+x.id;b.textContent=x.l;b.onclick=()=>switchTab(x.id);t.appendChild(b);});}
 
-function switchTab(id){document.querySelectorAll('.atab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.getElementById('t'+id)?.classList.add('active');document.getElementById('panel'+id)?.classList.add('active');if(id==='Dash')loadRpts();if(id==='Admin')loadActAdmin();if(id==='Missing')initMissing();if(id==='Workers')initWorkers();if(id==='History')initHistory();if(id==='AI')initAI();}
+function switchTab(id){document.querySelectorAll('.atab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.getElementById('t'+id)?.classList.add('active');document.getElementById('panel'+id)?.classList.add('active');if(id==='Dash')loadRpts();if(id==='Admin')loadActAdmin();if(id==='Missing')initMissing();if(id==='Workers')initWorkers();if(id==='History')initHistory();if(id==='AI')initAI();if(id==='Docs')initDocs();if(id==='Tickets')initTickets();}
 
 // ── ACTIVITIES ──
 async function loadActs(){if(!window.DB)return window.addEventListener('fb-ready',loadActs,{once:true});try{const snap=await window.FB.getDocs(window.FB.collection(window.DB,'activities'));acts=snap.docs.map(d=>(({id:d.id,...d.data()})));renderActUser();}catch(e){console.error(e);}}
@@ -1038,10 +1174,8 @@ window.addEventListener('fb-ready',()=>console.log('✅ Firebase'));
 var aiHistory=[], aiImg=null, anImg=null;
 var AI_KEY='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';
 var AI_SYS='אתה עוזר חכם של ALPA. ענה תמיד בעברית, קצר וברור.';
-var AN_PROMPT='אתה מנתח תמונות שטח עבור ALPA.\nבדוק את התמונה ודווח על:\n1. האם הפלנוגרמה מיושמת נכון\n2. האם התמונה מראה את מה שאמור להיות מצולם\n3. מה חסר או לא תקין\nענה בעברית, קצר וברור. השתמש ב-✅ לדברים תקינים ו-⚠️ לבעיות.';
-
+var AN_PROMPT='אתה מנתח תמונות שטח עבור ALPA.\nבדוק:\n1. האם הפלנוגרמה נכונה\n2. מה מצולם\n3. מה חסר\nענה בעברית. ✅ תקין ⚠️ בעיה.';
 function initAI(){}
-
 function aiSwitch(tab){
   document.getElementById('aiTab1').style.background=tab==='chat'?'var(--pink)':'#fff';
   document.getElementById('aiTab1').style.color=tab==='chat'?'#fff':'var(--gray3)';
@@ -1050,79 +1184,205 @@ function aiSwitch(tab){
   document.getElementById('aiChatPane').style.display=tab==='chat'?'block':'none';
   document.getElementById('aiAnalyzePane').style.display=tab==='analyze'?'flex':'none';
 }
-
 function aiAddMsg(role,content,img){
-  var box=document.getElementById('aiMsgs');
-  var isU=role==='user';
-  var wrap=document.createElement('div');
-  wrap.style.cssText='display:flex;gap:8px;flex-direction:'+(isU?'row-reverse':'row');
-  var av=document.createElement('div');
-  av.style.cssText='width:30px;height:30px;border-radius:50%;background:var(--pink);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0';
-  av.textContent=isU?(CU&&CU.name?CU.name[0]:'U'):'A';
-  var bub=document.createElement('div');
-  bub.style.cssText='background:'+(isU?'var(--pink)':'#fff')+';color:'+(isU?'#fff':'#333')+';border-radius:12px;border-top-'+(isU?'left':'right')+'-radius:3px;padding:10px 13px;font-size:13px;line-height:1.6;box-shadow:0 1px 4px rgba(0,0,0,.06);max-width:85%;white-space:pre-wrap';
+  var box=document.getElementById('aiMsgs');var isU=role==='user';
+  var wrap=document.createElement('div');wrap.style.cssText='display:flex;gap:8px;flex-direction:'+(isU?'row-reverse':'row');
+  var av=document.createElement('div');av.style.cssText='width:30px;height:30px;border-radius:50%;background:var(--pink);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0';av.textContent=isU?(CU&&CU.name?CU.name[0]:'U'):'A';
+  var bub=document.createElement('div');bub.style.cssText='background:'+(isU?'var(--pink)':'#fff')+';color:'+(isU?'#fff':'#333')+';border-radius:12px;border-top-'+(isU?'left':'right')+'-radius:3px;padding:10px 13px;font-size:13px;line-height:1.6;box-shadow:0 1px 4px rgba(0,0,0,.06);max-width:85%;white-space:pre-wrap';
   if(img){var im=document.createElement('img');im.src=img;im.style.cssText='max-width:160px;border-radius:8px;display:block;margin-bottom:6px';bub.appendChild(im);}
   if(content)bub.appendChild(document.createTextNode(content));
-  wrap.appendChild(av);wrap.appendChild(bub);box.appendChild(wrap);
-  box.scrollTop=box.scrollHeight;
-  return bub;
+  wrap.appendChild(av);wrap.appendChild(bub);box.appendChild(wrap);box.scrollTop=box.scrollHeight;
 }
-
 function aiTyping(){
-  var box=document.getElementById('aiMsgs');
-  var w=document.createElement('div');w.id='aiDots';w.style.cssText='display:flex;gap:8px;align-items:center';
+  var box=document.getElementById('aiMsgs');var w=document.createElement('div');w.id='aiDots';w.style.cssText='display:flex;gap:8px;align-items:center';
   var av=document.createElement('div');av.style.cssText='width:30px;height:30px;border-radius:50%;background:var(--pink);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0';av.textContent='A';
-  var d=document.createElement('div');d.style.cssText='background:#fff;border-radius:12px;border-top-right-radius:3px;padding:10px 14px;box-shadow:0 1px 4px rgba(0,0,0,.06)';
+  var d=document.createElement('div');d.style.cssText='background:#fff;border-radius:12px;padding:10px 14px;box-shadow:0 1px 4px rgba(0,0,0,.06)';
   d.innerHTML='<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--gray3);animation:bounce 1s infinite;margin:0 2px"></span><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--gray3);animation:bounce 1s infinite;animation-delay:150ms;margin:0 2px"></span><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--gray3);animation:bounce 1s infinite;animation-delay:300ms;margin:0 2px"></span>';
   w.appendChild(av);w.appendChild(d);box.appendChild(w);box.scrollTop=box.scrollHeight;
 }
-
-function aiAttach(inp){
-  var f=inp.files[0];if(!f)return;
-  var r=new FileReader();r.onload=function(e){aiImg=e.target.result;document.getElementById('aiImgPrev').style.display='flex';document.getElementById('aiImgThumb').src=e.target.result;};r.readAsDataURL(f);
-}
+function aiAttach(inp){var f=inp.files[0];if(!f)return;var r=new FileReader();r.onload=function(e){aiImg=e.target.result;document.getElementById('aiImgPrev').style.display='flex';document.getElementById('aiImgThumb').src=e.target.result;};r.readAsDataURL(f);}
 function aiClearImg(){aiImg=null;document.getElementById('aiImgPrev').style.display='none';document.getElementById('aiFileInp').value='';}
-
 async function aiSend(){
-  var txt=document.getElementById('aiInp').value.trim();
-  if(!txt&&!aiImg)return;
-  document.getElementById('aiInp').value='';
-  var imgSend=aiImg;aiClearImg();
+  var txt=document.getElementById('aiInp').value.trim();if(!txt&&!aiImg)return;
+  document.getElementById('aiInp').value='';var imgSend=aiImg;aiClearImg();
   aiAddMsg('user',txt,imgSend);
   var content=imgSend?[{type:'image',source:{type:'base64',media_type:'image/jpeg',data:imgSend.split(',')[1]}},{type:'text',text:txt||'תמונה'}]:txt;
-  aiHistory.push({role:'user',content:content});
-  aiTyping();
+  aiHistory.push({role:'user',content:content});aiTyping();
   try{
     var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':AI_KEY,'anthropic-version':'2023-06-01'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:AI_SYS,messages:aiHistory})});
-    var data=await res.json();
-    var reply=(data.content||[]).map(function(c){return c.text||'';}). join('')||'מצטער, לא הצלחתי לענות.';
-    var d=document.getElementById('aiDots');if(d)d.remove();
-    aiAddMsg('assistant',reply);
-    aiHistory.push({role:'assistant',content:reply});
-  }catch(e){var d=document.getElementById('aiDots');if(d)d.remove();aiAddMsg('assistant','שגיאה בחיבור.');}
+    var data=await res.json();var reply=(data.content||[]).map(function(c){return c.text||'';}).join('')||'מצטער.';
+    var d=document.getElementById('aiDots');if(d)d.remove();aiAddMsg('assistant',reply);aiHistory.push({role:'assistant',content:reply});
+  }catch(e){var d=document.getElementById('aiDots');if(d)d.remove();aiAddMsg('assistant','שגיאה.');}
 }
-
-function anLoad(inp){
-  var f=inp.files[0];if(!f)return;
-  var r=new FileReader();r.onload=function(e){anImg=e.target.result;document.getElementById('anPrev').src=e.target.result;document.getElementById('anPrevWrap').style.display='flex';document.getElementById('anEmpty').style.display='none';document.getElementById('anBtn').disabled=false;document.getElementById('anBtn').style.opacity='1';document.getElementById('anResult').style.display='none';};r.readAsDataURL(f);
-}
-
+function anLoad(inp){var f=inp.files[0];if(!f)return;var r=new FileReader();r.onload=function(e){anImg=e.target.result;document.getElementById('anPrev').src=e.target.result;document.getElementById('anPrevWrap').style.display='flex';document.getElementById('anEmpty').style.display='none';document.getElementById('anBtn').disabled=false;document.getElementById('anBtn').style.opacity='1';document.getElementById('anResult').style.display='none';};r.readAsDataURL(f);}
 async function anRun(){
-  if(!anImg)return;
-  var btn=document.getElementById('anBtn');btn.disabled=true;btn.textContent='מנתח...';btn.style.opacity='.6';
-  document.getElementById('anResult').style.display='none';
-  var desc=document.getElementById('anDesc').value.trim();
-  var prompt=desc?'הפעילות: '+desc+'\n\n'+AN_PROMPT:AN_PROMPT;
+  if(!anImg)return;var btn=document.getElementById('anBtn');btn.disabled=true;btn.textContent='מנתח...';btn.style.opacity='.6';document.getElementById('anResult').style.display='none';
+  var desc=document.getElementById('anDesc').value.trim();var prompt=desc?'הפעילות: '+desc+'\n\n'+AN_PROMPT:AN_PROMPT;
   try{
     var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':AI_KEY,'anthropic-version':'2023-06-01'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:'image/jpeg',data:anImg.split(',')[1]}},{type:'text',text:prompt}]}]})});
-    var data=await res.json();
-    document.getElementById('anResultTxt').textContent=(data.content||[]).map(function(c){return c.text||'';}).join('')||'לא הצלחתי לנתח.';
-    document.getElementById('anResult').style.display='block';
-  }catch(e){document.getElementById('anResultTxt').textContent='שגיאה בניתוח.';document.getElementById('anResult').style.display='block';}
+    var data=await res.json();document.getElementById('anResultTxt').textContent=(data.content||[]).map(function(c){return c.text||'';}).join('')||'לא הצלחתי.';document.getElementById('anResult').style.display='block';
+  }catch(e){document.getElementById('anResultTxt').textContent='שגיאה.';document.getElementById('anResult').style.display='block';}
   btn.disabled=false;btn.textContent='🔍 נתח תמונה';btn.style.opacity='1';
 }
-
 function anReset(){anImg=null;document.getElementById('anFileInp').value='';document.getElementById('anPrevWrap').style.display='none';document.getElementById('anEmpty').style.display='block';document.getElementById('anBtn').disabled=true;document.getElementById('anBtn').style.opacity='.4';document.getElementById('anResult').style.display='none';document.getElementById('anDesc').value='';}
+
+// ── DOCS ──
+var catIco='📢',editCatId=null,docsData=[];
+async function initDocs(){
+  if(CU&&CU.role==='admin')document.getElementById('docsAdminBar').style.display='block';
+  if(!window.DB)return;
+  var snap=await window.FB.getDocs(window.FB.collection(window.DB,'docs_categories'));
+  docsData=snap.docs.map(function(d){return Object.assign({id:d.id},d.data());}).filter(function(c){return !c.deleted;});
+  docsData.sort(function(a,b){return (a.order||0)-(b.order||0);});
+  renderDocs();
+}
+function renderDocs(){
+  var list=document.getElementById('docsList');
+  if(!docsData.length){list.innerHTML='<div class="no-act">📭<br>אין מידע עדיין</div>';return;}
+  list.innerHTML=docsData.map(function(cat){
+    var links=(cat.links||[]).map(function(l){return '<a href="'+l.url+'" target="_blank" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--gray);border-radius:10px;text-decoration:none;color:var(--text);border:1.5px solid var(--gray2);margin-bottom:6px"><span style="font-size:20px">🔗</span><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600">'+l.title+'</div>'+(l.desc?'<div style="font-size:11px;color:var(--gray3)">'+l.desc+'</div>':'')+'</div><span style="color:var(--pink)">←</span></a>';}).join('');
+    var editBtn=CU&&CU.role==='admin'?'<button onclick="openCatModal(''+cat.id+'')" style="background:none;border:none;font-size:11px;color:var(--gray3);cursor:pointer">✏️</button>':'';
+    return '<div class="acard" style="margin-bottom:12px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span style="font-size:24px">'+cat.icon+'</span><div style="flex:1"><div style="font-size:16px;font-weight:700">'+cat.name+'</div>'+(cat.note?'<div style="font-size:12px;color:var(--gray3)">'+cat.note+'</div>':'')+'</div>'+editBtn+'</div>'+links+'</div>';
+  }).join('');
+}
+function openCatModal(id){
+  editCatId=id||null;catIco='📢';
+  document.querySelectorAll('#catModal [data-i]').forEach(function(e){e.style.borderColor='transparent';});
+  var first=document.querySelector('#catModal [data-i="📢"]');if(first)first.style.borderColor='var(--pink)';
+  document.getElementById('catName').value='';document.getElementById('catNote').value='';document.getElementById('linksList').innerHTML='';
+  document.getElementById('deleteCatBtn').style.display=id?'block':'none';
+  if(id){var cat=docsData.find(function(c){return c.id===id;});if(cat){document.getElementById('catName').value=cat.name||'';document.getElementById('catNote').value=cat.note||'';catIco=cat.icon||'📢';var el=document.querySelector('#catModal [data-i="'+catIco+'"]');if(el){document.querySelectorAll('#catModal [data-i]').forEach(function(e){e.style.borderColor='transparent';});el.style.borderColor='var(--pink)';}(cat.links||[]).forEach(function(l){addLinkRow(l.title,l.url,l.desc);});}}
+  document.getElementById('catModal').style.display='flex';
+}
+function closeCatModal(){document.getElementById('catModal').style.display='none';}
+function pickCatIco(el){catIco=el.dataset.i;document.querySelectorAll('#catModal [data-i]').forEach(function(e){e.style.borderColor='transparent';});el.style.borderColor='var(--pink)';}
+function addLinkRow(title,url,desc){
+  var row=document.createElement('div');row.style.cssText='display:flex;flex-direction:column;gap:6px;background:var(--gray);border-radius:10px;padding:10px';
+  row.innerHTML='<div style="display:flex;gap:6px"><input class="f-in" placeholder="שם הקישור" value="'+(title||'')+'" style="flex:2;margin:0"/><button onclick="this.closest('div[style]').remove()" style="background:none;border:none;color:#dc2626;font-size:18px;cursor:pointer">✕</button></div><input class="f-in" placeholder="https://drive.google.com/..." value="'+(url||'')+'" style="margin:0"/><input class="f-in" placeholder="תיאור (אופציונלי)" value="'+(desc||'')+'" style="margin:0;font-size:12px"/>';
+  document.getElementById('linksList').appendChild(row);
+}
+async function saveCat(){
+  var name=document.getElementById('catName').value.trim();if(!name){alert('נא להזין שם');return;}
+  var links=[];document.getElementById('linksList').querySelectorAll('div[style]').forEach(function(row){var ins=row.querySelectorAll('input');if(ins[0]&&ins[0].value.trim())links.push({title:ins[0].value.trim(),url:ins[1]?ins[1].value.trim():'',desc:ins[2]?ins[2].value.trim():''});});
+  var data={name:name,icon:catIco,note:document.getElementById('catNote').value.trim(),links:links,order:editCatId?((docsData.find(function(c){return c.id===editCatId;})||{}).order||0):docsData.length,updatedAt:Date.now()};
+  if(editCatId){await window.FB.updateDoc(window.FB.doc(window.DB,'docs_categories',editCatId),data);}else{await window.FB.addDoc(window.FB.collection(window.DB,'docs_categories'),data);}
+  closeCatModal();initDocs();
+}
+async function deleteCat(){if(!confirm('למחוק?'))return;await window.FB.updateDoc(window.FB.doc(window.DB,'docs_categories',editCatId),{deleted:true});closeCatModal();initDocs();}
+
+// ── TICKETS ──
+var tktImg=null, allTickets=[];
+var TKT_STATUS_COLOR={פתוח:'#dc2626',בטיפול:'#d97706',נסגר:'#16a34a'};
+var TKT_STATUS_BG={פתוח:'#fee2e2',בטיפול:'#fef3c7',נסגר:'#dcfce7'};
+
+async function initTickets(){
+  if(CU&&['admin','area_manager'].includes(CU.role))document.getElementById('allTicketsWrap').style.display='block';
+  loadMyTickets();
+  if(CU&&['admin','area_manager'].includes(CU.role))loadAllTickets();
+}
+
+function handleTktImg(inp){var f=inp.files[0];if(!f)return;var r=new FileReader();r.onload=function(e){var img=new Image();img.onload=function(){var c=document.createElement('canvas');var M=900;var w=img.width,h=img.height;if(w>M){h=Math.round(h*M/w);w=M;}c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);tktImg=c.toDataURL('image/jpeg',.72);var pv=document.getElementById('tktPvImg');pv.src=tktImg;pv.style.display='block';document.getElementById('tktPvDel').style.display='flex';};img.src=e.target.result;};r.readAsDataURL(f);}
+function clearTktImg(){tktImg=null;document.getElementById('tktPvImg').style.display='none';document.getElementById('tktPvDel').style.display='none';document.getElementById('tktCam').value='';document.getElementById('tktGal').value='';}
+
+async function submitTicket(){
+  var type=document.getElementById('ticketType').value;
+  var desc=document.getElementById('ticketDesc').value.trim();
+  var product=document.getElementById('ticketProduct').value.trim();
+  if(!type){alert('נא לבחור סוג פנייה');return;}
+  if(!desc){alert('נא לפרט את הבעיה');return;}
+  if(!window.DB)return;
+  var btn=document.querySelector('#ticketNewWrap .btn-sub');btn.disabled=true;btn.textContent='שולח...';
+  try{
+    await window.FB.addDoc(window.FB.collection(window.DB,'tickets'),{
+      type:type,product:product,desc:desc,img:tktImg||null,
+      status:'פתוח',
+      workerEmail:CU.email,workerName:CU.name,workerRole:CU.role,
+      branchId:CU.branchId||null,branchName:CU.branchName||null,network:CU.network||null,
+      date:new Date().toLocaleDateString('he-IL'),time:new Date().toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}),
+      ts:Date.now(),replies:[]
+    });
+    document.getElementById('ticketType').value='';document.getElementById('ticketDesc').value='';document.getElementById('ticketProduct').value='';clearTktImg();
+    var t=document.getElementById('tktToast');t.style.display='block';setTimeout(function(){t.style.display='none';},3500);
+    loadMyTickets();if(CU&&['admin','area_manager'].includes(CU.role))loadAllTickets();
+  }catch(e){alert('שגיאה: '+e.message);}
+  btn.disabled=false;btn.textContent='📤 שלח פנייה';
+}
+
+async function loadMyTickets(){
+  if(!window.DB)return;
+  var snap=await window.FB.getDocs(window.FB.query(window.FB.collection(window.DB,'tickets'),window.FB.orderBy('ts','desc')));
+  var mine=snap.docs.map(function(d){return Object.assign({id:d.id},d.data());}).filter(function(t){return t.workerEmail===CU.email;});
+  var list=document.getElementById('myTicketsList');
+  if(!mine.length){list.innerHTML='<div style="text-align:center;padding:1.5rem;color:var(--gray3);font-size:13px">אין פניות עדיין</div>';return;}
+  list.innerHTML=mine.map(function(t){
+    var lastReply=t.replies&&t.replies.length?t.replies[t.replies.length-1]:null;
+    return '<div onclick="openTktModal(''+t.id+'')" style="border:1.5px solid var(--gray2);border-radius:12px;padding:11px 13px;margin-bottom:8px;cursor:pointer;transition:all .2s" onmouseover="this.style.borderColor='var(--pink)'" onmouseout="this.style.borderColor='var(--gray2)'">'+'<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">'+'<span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;background:'+(TKT_STATUS_BG[t.status]||'#f3f4f6')+';color:'+(TKT_STATUS_COLOR[t.status]||'#666')+'">'+t.status+'</span>'+'<span style="font-size:12px;font-weight:600;flex:1">'+t.type+'</span>'+'<span style="font-size:11px;color:var(--gray3)">'+t.date+'</span></div>'+(t.product?'<div style="font-size:12px;color:var(--gray3);margin-bottom:3px">🏷️ '+t.product+'</div>':'')+'<div style="font-size:12px;color:#555;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+t.desc+'</div>'+(lastReply?'<div style="font-size:11px;color:var(--pink);margin-top:4px">💬 תגובה: '+lastReply.text.substring(0,50)+'...</div>':'')+'</div>';
+  }).join('');
+}
+
+async function loadAllTickets(){
+  if(!window.DB)return;
+  var snap=await window.FB.getDocs(window.FB.query(window.FB.collection(window.DB,'tickets'),window.FB.orderBy('ts','desc')));
+  allTickets=snap.docs.map(function(d){return Object.assign({id:d.id},d.data());});
+  renderAllTickets();
+}
+
+function renderAllTickets(){
+  var statusF=document.getElementById('tktFilterStatus').value;
+  var typeF=document.getElementById('tktFilterType').value;
+  var f=allTickets;
+  if(statusF)f=f.filter(function(t){return t.status===statusF;});
+  if(typeF)f=f.filter(function(t){return t.type===typeF;});
+  var list=document.getElementById('allTicketsList');
+  if(!f.length){list.innerHTML='<div style="text-align:center;padding:1.5rem;color:var(--gray3);font-size:13px">אין פניות</div>';return;}
+  list.innerHTML=f.map(function(t){
+    return '<div onclick="openTktModal(''+t.id+'')" style="border:1.5px solid var(--gray2);border-radius:12px;padding:11px 13px;margin-bottom:8px;cursor:pointer" onmouseover="this.style.borderColor='var(--pink)'" onmouseout="this.style.borderColor='var(--gray2)'">'+'<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">'+'<span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;background:'+(TKT_STATUS_BG[t.status]||'#f3f4f6')+';color:'+(TKT_STATUS_COLOR[t.status]||'#666')+'">'+t.status+'</span>'+'<span style="font-size:12px;font-weight:600;flex:1">'+t.type+'</span>'+'<span style="font-size:11px;color:var(--gray3)">'+t.date+'</span></div>'+'<div style="font-size:12px;font-weight:500;color:var(--pink);margin-bottom:2px">'+t.workerName+(t.branchName?' · '+t.branchName:'')+'</div>'+(t.product?'<div style="font-size:11px;color:var(--gray3)">🏷️ '+t.product+'</div>':'')+'<div style="font-size:12px;color:#555;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+t.desc+'</div>'+(t.replies&&t.replies.length?'<div style="font-size:11px;color:var(--gray3);margin-top:3px">💬 '+t.replies.length+' תגובות</div>':'')+'</div>';
+  }).join('');
+}
+
+var currentTktId=null;
+async function openTktModal(id){
+  currentTktId=id;
+  var snap=await window.FB.getDocs(window.FB.collection(window.DB,'tickets'));
+  var t=snap.docs.map(function(d){return Object.assign({id:d.id},d.data());}).find(function(x){return x.id===id;});
+  if(!t)return;
+  var isAdmin=CU&&['admin','area_manager'].includes(CU.role);
+  var repliesHtml=(t.replies||[]).map(function(r){
+    var isMe=r.email===CU.email;
+    return '<div style="display:flex;gap:8px;flex-direction:'+(isMe?'row-reverse':'row')+';margin-bottom:8px"><div style="width:28px;height:28px;border-radius:50%;background:var(--pink);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0">'+(r.name?r.name[0]:'?')+'</div><div style="background:'+(isMe?'var(--pink)':'var(--gray)')+';color:'+(isMe?'#fff':'var(--text)')+';border-radius:10px;padding:8px 12px;font-size:13px;max-width:80%"><div>'+r.text+'</div><div style="font-size:10px;opacity:.6;margin-top:3px">'+r.name+' · '+r.time+'</div></div></div>';
+  }).join('');
+  var statusButtons=isAdmin?'<div style="display:flex;gap:6px;margin-top:1rem"><button onclick="updateTktStatus('פתוח')" style="flex:1;padding:7px;border-radius:8px;border:1.5px solid #fecaca;background:#fee2e2;color:#dc2626;font-size:12px;font-weight:600;cursor:pointer;font-family:Heebo,sans-serif">פתוח</button><button onclick="updateTktStatus('בטיפול')" style="flex:1;padding:7px;border-radius:8px;border:1.5px solid #fde68a;background:#fef3c7;color:#d97706;font-size:12px;font-weight:600;cursor:pointer;font-family:Heebo,sans-serif">בטיפול</button><button onclick="updateTktStatus('נסגר')" style="flex:1;padding:7px;border-radius:8px;border:1.5px solid #bbf7d0;background:#dcfce7;color:#16a34a;font-size:12px;font-weight:600;cursor:pointer;font-family:Heebo,sans-serif">נסגר</button></div>':'';
+  document.getElementById('tktModalContent').innerHTML=
+    '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">'+'<span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;background:'+(TKT_STATUS_BG[t.status]||'#f3f4f6')+';color:'+(TKT_STATUS_COLOR[t.status]||'#666')+'">'+t.status+'</span>'+'<span style="font-size:16px;font-weight:700;flex:1">'+t.type+'</span></div>'+
+    '<div style="font-size:12px;color:var(--gray3);margin-bottom:4px">👤 '+t.workerName+(t.branchName?' · '+t.branchName:'')+(t.network?' · '+t.network:'')+'</div>'+
+    '<div style="font-size:12px;color:var(--gray3);margin-bottom:10px">🕐 '+t.date+' '+t.time+'</div>'+
+    (t.product?'<div style="background:var(--gray);border-radius:8px;padding:8px 10px;font-size:13px;margin-bottom:8px">🏷️ '+t.product+'</div>':'')+
+    '<div style="background:var(--gray);border-radius:8px;padding:10px 12px;font-size:13px;line-height:1.6;margin-bottom:10px">'+t.desc+'</div>'+
+    (t.img?'<img src="'+t.img+'" style="width:100%;border-radius:10px;margin-bottom:10px;cursor:pointer" onclick="openLB(this.src,'תמונת פנייה')"/>':'')+
+    statusButtons+
+    '<div style="margin-top:1rem"><div style="font-size:13px;font-weight:700;margin-bottom:8px">💬 שיחה</div>'+repliesHtml+'</div>'+
+    '<div style="display:flex;gap:8px;margin-top:10px"><textarea id="replyInp" placeholder="כתוב תגובה..." rows="2" style="flex:1;border:1.5px solid var(--gray2);border-radius:10px;padding:8px 10px;font-size:13px;font-family:Heebo,sans-serif;resize:none;direction:rtl;outline:none"></textarea><button onclick="sendReply()" style="background:var(--pink);border:none;border-radius:10px;padding:8px 14px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:Heebo,sans-serif;align-self:flex-end">שלח</button></div>';
+  document.getElementById('tktModal').style.display='flex';
+}
+
+function closeTktModal(){document.getElementById('tktModal').style.display='none';currentTktId=null;}
+
+async function updateTktStatus(status){
+  if(!currentTktId)return;
+  await window.FB.updateDoc(window.FB.doc(window.DB,'tickets',currentTktId),{status:status});
+  closeTktModal();loadAllTickets();loadMyTickets();
+}
+
+async function sendReply(){
+  var txt=document.getElementById('replyInp').value.trim();if(!txt||!currentTktId)return;
+  var snap=await window.FB.getDocs(window.FB.collection(window.DB,'tickets'));
+  var t=snap.docs.map(function(d){return Object.assign({id:d.id},d.data());}).find(function(x){return x.id===currentTktId;});
+  if(!t)return;
+  var replies=t.replies||[];
+  replies.push({name:CU.name,email:CU.email,text:txt,time:new Date().toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}),ts:Date.now()});
+  await window.FB.updateDoc(window.FB.doc(window.DB,'tickets',currentTktId),{replies:replies});
+  openTktModal(currentTktId);loadMyTickets();if(CU&&['admin','area_manager'].includes(CU.role))loadAllTickets();
+}
 
 let deferredPrompt=null;
 window.addEventListener('beforeinstallprompt',(e)=>{e.preventDefault();deferredPrompt=e;document.getElementById('installBanner').style.display='flex';});
