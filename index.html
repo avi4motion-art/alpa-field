@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <!-- saved from url=(0045)file:///C:/Users/avia/Downloads/index_11.html -->
 <html lang="he" dir="rtl"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -694,6 +695,7 @@ function enterApp(user){
   document.getElementById('hBr').textContent=user.branchName?(user.branchName+(user.network?' · '+user.network:'')):'כל הסניפים';
   const rb=document.getElementById('rBdg');rb.textContent=RL[user.role]||user.role;rb.className='rbdg '+(RC[user.role]||'r-fld');
   buildTabs();
+  window.addEventListener('fb-ready',seedDocsIfEmpty,{once:true});if(window.DB)seedDocsIfEmpty();
   document.getElementById('loginScreen').classList.remove('active');
   document.getElementById('mainScreen').classList.add('active');
   switchTab('Upload');loadActs();
@@ -798,10 +800,18 @@ async function loadActAdmin(){
     acts=snap.docs.map(d=>(({id:d.id,...d.data()})));
     if(!acts.length){c.innerHTML='<div style="color:var(--gray3);font-size:13px;text-align:center;padding:1rem">אין פעילויות עדיין</div>';return;}
     const now=toDay();
-    c.innerHTML=acts.map(a=>{const op=a.status!=='closed'&&(!a.endDate||a.endDate>=now)&&(!a.startDate||a.startDate<=now);const cnt=a.branchIds?.length||0;return`<div class="amg"><div style="font-size:20px">${a.icon||'📋'}</div><div class="amg-i"><div class="amg-nm">${a.name}</div><div class="amg-mt">${fmtD(a.startDate)} — ${fmtD(a.endDate)} · ${cnt===0?'כל הסניפים':cnt+' סניפים'}</div></div><span class="ast ${op?'a-op':'a-cl'}">${op?'פעיל':'סגור'}</span><div class="amg-btns"><button class="btn-a sm" onclick="openModal('edit','${a.id}')">✏️ עריכה</button>${op?`<button class="btn-a sm danger" onclick="closeAct('${a.id}')">סגור</button>`:''}</div></div>`;}).join('');
+    c.innerHTML=acts.map(a=>{const op=a.status!=='closed'&&(!a.endDate||a.endDate>=now)&&(!a.startDate||a.startDate<=now);const cnt=a.branchIds?.length||0;return`<div class="amg"><div style="font-size:20px">${a.icon||'📋'}</div><div class="amg-i"><div class="amg-nm">${a.name}</div><div class="amg-mt">${fmtD(a.startDate)} — ${fmtD(a.endDate)} · ${cnt===0?'כל הסניפים':cnt+' סניפים'}</div></div><span class="ast ${op?'a-op':'a-cl'}">${op?'פעיל':'סגור'}</span><div class="amg-btns"><button class="btn-a sm" onclick="openModal('edit','${a.id}')">✏️ עריכה</button>${op?`<button class="btn-a sm danger" onclick="closeAct('${a.id}')">סגור</button>`:''}<button class="btn-a sm" onclick="deleteAct('${a.id}')" style="border-color:#fca5a5;color:#dc2626" title="מחק">🗑️</button></div></div>`;}).join('');
   }catch(e){c.innerHTML='<div style="color:red;font-size:13px">שגיאה: '+e.message+'</div>';}
 }
 
+async function deleteAct(id){
+  if(!confirm('למחוק את הפעילות לצמיתות?\nלא ניתן לשחזר!'))return;
+  try{
+    const {deleteDoc}=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    await deleteDoc(window.FB.doc(window.DB,'activities',id));
+    loadActAdmin();loadActs();
+  }catch(e){alert('שגיאה: '+e.message);}
+}
 async function closeAct(id){if(!confirm('לסגור את הפעילות?'))return;await window.FB.updateDoc(window.FB.doc(window.DB,'activities',id),{status:'closed'});loadActAdmin();loadActs();}
 
 // ── MODAL ──
@@ -1382,6 +1392,25 @@ async function sendReply(){
   replies.push({name:CU.name,email:CU.email,text:txt,time:new Date().toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}),ts:Date.now()});
   await window.FB.updateDoc(window.FB.doc(window.DB,'tickets',currentTktId),{replies:replies});
   openTktModal(currentTktId);loadMyTickets();if(CU&&['admin','area_manager'].includes(CU.role))loadAllTickets();
+}
+
+
+async function seedDocsIfEmpty(){
+  if(!window.DB)return;
+  try{
+    var snap=await window.FB.getDocs(window.FB.collection(window.DB,'docs_categories'));
+    if(snap.docs.length>0)return; // already seeded
+    var cats=[
+      {name:'מבצעי החודש',icon:'📢',note:'מבצעים ומחירים מיוחדים לחודש הנוכחי',order:0,links:[{title:'תיקיית מבצעי החודש',url:'https://drive.google.com/drive/folders/1JO2jyW2iwKa7SynC6xd3CLNUnDxVKKlt?usp=sharing',desc:'לחץ לפתיחה ב-Google Drive'}],updatedAt:Date.now()},
+      {name:'פלנוגרמות',icon:'🗺️',note:'פלנוגרמות לפי רשת ומוצר',order:1,links:[{title:'תיקיית פלנוגרמות',url:'https://drive.google.com/drive/folders/11zcZpDAT9qUquOFgCsioTSUSthp67tju?usp=sharing',desc:'לחץ לפתיחה ב-Google Drive'}],updatedAt:Date.now()},
+      {name:'טופסי הזמנה',icon:'📋',note:'טפסי הזמנה לפי מותג ורשת',order:2,links:[{title:'תיקיית טופסי הזמנה',url:'https://drive.google.com/drive/folders/1-y46ly9sTA5Sops2lt2mdk5aJpcuy6nV?usp=sharing',desc:'לחץ לפתיחה ב-Google Drive'}],updatedAt:Date.now()},
+      {name:'טופסי גיוס',icon:'📝',note:'טפסי גיוס עובדים',order:3,links:[{title:'תיקיית טופסי גיוס',url:'https://drive.google.com/drive/folders/17zFe3h737GhPEtK8_BvaFdy5LSOHebj3?usp=sharing',desc:'לחץ לפתיחה ב-Google Drive'}],updatedAt:Date.now()}
+    ];
+    for(var i=0;i<cats.length;i++){
+      await window.FB.addDoc(window.FB.collection(window.DB,'docs_categories'),cats[i]);
+    }
+    console.log('✅ Docs seeded');
+  }catch(e){console.error('seed error',e);}
 }
 
 let deferredPrompt=null;
