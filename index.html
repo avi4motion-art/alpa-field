@@ -1259,7 +1259,7 @@ function closeCatModal(){document.getElementById('catModal').style.display='none
 function pickCatIco(el){catIco=el.dataset.i;document.querySelectorAll('#catModal [data-i]').forEach(function(e){e.style.borderColor='transparent';});el.style.borderColor='var(--pink)';}
 function addLinkRow(title,url,desc){
   var row=document.createElement('div');row.style.cssText='display:flex;flex-direction:column;gap:6px;background:var(--gray);border-radius:10px;padding:10px';
-  row.innerHTML='<div style="display:flex;gap:6px"><input class="f-in" placeholder="שם הקישור" value="'+(title||'')+'" style="flex:2;margin:0"/><button onclick="this.closest('div[style]').remove()" style="background:none;border:none;color:#dc2626;font-size:18px;cursor:pointer">✕</button></div><input class="f-in" placeholder="https://drive.google.com/..." value="'+(url||'')+'" style="margin:0"/><input class="f-in" placeholder="תיאור (אופציונלי)" value="'+(desc||'')+'" style="margin:0;font-size:12px"/>';
+  row.innerHTML='<div style="display:flex;gap:6px"><input class="f-in" placeholder="שם הקישור" value="'+(title||'')+'" style="flex:2;margin:0"/><button onclick="this.parentElement.parentElement.remove()" style="background:none;border:none;color:#dc2626;font-size:18px;cursor:pointer">✕</button></div><input class="f-in" placeholder="https://drive.google.com/..." value="'+(url||'')+'" style="margin:0"/><input class="f-in" placeholder="תיאור (אופציונלי)" value="'+(desc||'')+'" style="margin:0;font-size:12px"/>';
   document.getElementById('linksList').appendChild(row);
 }
 async function saveCat(){
