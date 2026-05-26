@@ -1597,7 +1597,7 @@ function renderAiChoices(items, level) {
     const lnk = menuLinks[item.key] || (item.children ? 'has_children' : '');
     const available = item.children ? true : !!lnk;
     const unavailClass = available ? '' : 'opacity:.45;filter:grayscale(1);';
-    return '<button onclick="aiChoose('' + item.id + '','' + level + '')" style="' +
+    return '<button onclick="aiChoose(\'' + item.id + '\',\'' + level + '\')" style="' +
       'width:100%;padding:12px 14px;border-radius:12px;border:1.5px solid var(--gray2);' +
       'background:var(--white);color:var(--text);font-size:14px;font-weight:600;' +
       'cursor:' + (available ? 'pointer' : 'default') + ';font-family:Heebo,sans-serif;' +
