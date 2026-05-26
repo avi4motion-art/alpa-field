@@ -424,11 +424,13 @@ input,select,textarea,button{font-family:'Heebo',sans-serif}
   <!-- AI PANEL -->
   <div class="panel" id="panelAI">
     <div style="max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:0">
-    <!-- Password Management -->
-    <div class="acard" style="margin-bottom:16px">
-      <div style="font-size:15px;font-weight:700;margin-bottom:12px">🔐 ניהול סיסמאות</div>
-      <div id="passwordAdminList"></div>
-      <button onclick="savePasswords()" style="margin-top:10px;width:100%;padding:10px;background:var(--pink);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:Heebo,sans-serif">💾 שמור סיסמאות</button>
+    <!-- Password Management (admin only) -->
+    <div id="passwordAdminSection" style="display:none;margin-bottom:16px">
+      <div class="acard">
+        <div style="font-size:15px;font-weight:700;margin-bottom:12px">🔐 ניהול סיסמאות</div>
+        <div id="passwordAdminList"></div>
+        <button onclick="savePasswords()" style="margin-top:10px;width:100%;padding:10px;background:var(--pink);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:Heebo,sans-serif">💾 שמור סיסמאות</button>
+      </div>
     </div>
 
 
@@ -1381,7 +1383,6 @@ var aiHistory=[], aiImg=null, anImg=null;
 var AI_KEY='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';
 var AI_SYS='אתה עוזר חכם של ALPA. ענה תמיד בעברית, קצר וברור.';
 var AN_PROMPT='אתה מנתח תמונות שטח עבור ALPA.\nבדוק:\n1. האם הפלנוגרמה נכונה\n2. מה מצולם\n3. מה חסר\nענה בעברית. ✅ תקין ⚠️ בעיה.';
-function initAI(){}
 function aiSwitch(tab){
   document.getElementById('aiTab1').style.background=tab==='chat'?'var(--pink)':'#fff';
   document.getElementById('aiTab1').style.color=tab==='chat'?'#fff':'var(--gray3)';
@@ -1939,6 +1940,9 @@ var userPasswords = {};
 
 async function initPasswords() {
   if(!window.DB) return;
+  const sec = document.getElementById('passwordAdminSection');
+  if(sec) sec.style.display = CU&&CU.role==='admin' ? 'block' : 'none';
+  if(!CU||CU.role!=='admin') return;
   try {
     const snap = await window.FB.getDoc(window.FB.doc(window.DB,'config','passwords'));
     if(snap.exists()) userPasswords = snap.data() || {};
