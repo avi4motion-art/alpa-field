@@ -703,7 +703,7 @@ function enterApp(user){
   document.getElementById('hBr').textContent=user.branchName?(user.branchName+(user.network?' · '+user.network:'')):'כל הסניפים';
   const rb=document.getElementById('rBdg');rb.textContent=RL[user.role]||user.role;rb.className='rbdg '+(RC[user.role]||'r-fld');
   buildTabs();
-  window.addEventListener('fb-ready',seedDocsIfEmpty,{once:true});if(window.DB)seedDocsIfEmpty();
+  window.addEventListener('fb-ready',seedDocsIfEmpty,{once:true});if(window.DB)seedDocsIfEmpty();window.addEventListener('fb-ready',function(){window.FB.getDoc(window.FB.doc(window.DB,'config','targetLinks')).then(function(s){if(s.exists())Object.assign(targetLinks,s.data());});},{once:true});
   document.getElementById('loginScreen').classList.remove('active');
   document.getElementById('mainScreen').classList.add('active');
   switchTab('Upload');loadActs();
