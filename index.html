@@ -1572,12 +1572,10 @@ async function initAI() {
     const snap = await window.FB.getDoc(window.FB.doc(window.DB,'config','menuLinks'));
     if(snap.exists()) menuLinks = snap.data() || {};
   } catch(e) { menuLinks = {}; }
-  if(!Object.keys(targetLinks).length){
-    try{
-      const snap2 = await window.FB.getDoc(window.FB.doc(window.DB,'config','targetLinks'));
-      if(snap2.exists()){const d=snap2.data();Object.assign(targetLinks,d);}
-    }catch(e){}
-  }
+  try {
+    const snap2 = await window.FB.getDoc(window.FB.doc(window.DB,'config','targetLinks'));
+    if(snap2.exists()){const d=snap2.data();Object.keys(d).forEach(k=>{targetLinks[k]=d[k];});}
+  } catch(e) {}
   aiHistory = [];
   aiRenderMain();
 }
