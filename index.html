@@ -1,6 +1,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="he" dir="rtl"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
@@ -651,6 +652,32 @@ input,select,textarea,button{font-family:'Heebo',sans-serif}
   </div>
 </div>
 
+
+<!-- TARGETS PANEL -->
+<div class="panel" id="panelTargets">
+  <div style="max-width:560px;margin:0 auto">
+
+    <div id="targetsAdminBar" style="display:none;margin-bottom:16px">
+      <div class="acard">
+        <div style="font-size:15px;font-weight:700;margin-bottom:14px">⚙️ ניהול קישורי יעדים</div>
+        <div id="targetsAdminList"></div>
+        <button onclick="saveTargetLinks()" style="margin-top:10px;width:100%;padding:11px;background:var(--pink);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:Heebo,sans-serif">💾 שמור קישורים</button>
+      </div>
+    </div>
+
+    <div id="targetsUserArea">
+      <div class="acard" style="text-align:center;padding:28px 16px">
+        <div style="font-size:44px;margin-bottom:8px">🎯</div>
+        <div style="font-size:18px;font-weight:700;margin-bottom:4px">יעדים חודשיים</div>
+        <div style="font-size:13px;color:var(--gray3);margin-bottom:22px">הורד את קובץ היעדים שלך</div>
+        <div id="targetsDownloadBtns" style="display:flex;flex-direction:column;gap:10px"></div>
+        <div id="targetsNoLinks" style="display:none;font-size:13px;color:var(--gray3);padding:10px">אין קישורים זמינים כרגע</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
 <script>
 const USERS={'avia@alpa-cosmetics.co.il':{name:'אבי',role:'admin'},'lior@alpa-cosmetics.co.il':{name:'ליאור',role:'admin'},'mishi@alpa-cosmetics.co.il':{name:'מישי',role:'admin'},'liorac@alpa-cosmetics.co.il':{name:'ליאורה ארקנזי',role:'area_manager'},'ronenl@alpa-cosmetics.co.il':{name:'רונן לחאם',role:'area_manager'},'lital@alpa-cosmetics.co.il':{name:'ליטל בלילה',role:'area_manager'},'dudi@alpa-cosmetics.co.il':{name:'דודי לוי',role:'agent'},'anat.b@alpa-cosmetics.co.il':{name:'ענת ביטן',role:'agent'},'liat.fl@alpa-cosmetics.co.il':{name:'ליאת פליישר',role:'agent'},'haim@alpa-cosmetics.co.il':{name:'חיים בן דוד',role:'agent'},'shmulik@alpa-cosmetics.co.il':{name:'שמוליק מאיר',role:'agent'},'lital.g@alpa-cosmetics.co.il':{name:'ליטל גולן',role:'supervisor'},'moran.h@alpa-cosmetics.co.il':{name:'מורן חסון',role:'supervisor'},'sharon.c@alpa-cosmetics.co.il':{name:'שרון כהן',role:'supervisor'},'liya@alpa-cosmetics.co.il':{name:'ליה ברט',role:'supervisor'},'olga@alpa-cosmetics.co.il':{name:'אולגה חוא',role:'supervisor'},'lea@alpa-cosmetics.co.il':{name:'לאה מגן',role:'supervisor'},'daisy@alpa-cosmetics.co.il':{name:'דייזי קליין',role:'supervisor'}};
 const RL={admin:'מנהל ראשי',area_manager:'מנהל אזור',agent:'סוכן',supervisor:'מפקחת'};
@@ -703,9 +730,9 @@ function enterApp(user){
 
 function doLogout(){localStorage.removeItem(SK);CU=null;selB=null;imgData=null;selAct=null;repBr=null;document.getElementById('lEmail').value='';document.getElementById('selBox').style.display='none';document.getElementById('svBanner').style.display='none';document.getElementById('orDv').style.display='none';document.getElementById('mainScreen').classList.remove('active');document.getElementById('loginScreen').classList.add('active');}
 
-function buildTabs(){const t=document.getElementById('atabs');t.innerHTML='';[{id:'Upload',l:'📋 דיווח'},{id:'Dash',l:'📊 דשבורד'},{id:'Missing',l:'🔴 חסרים',mgr:true},{id:'History',l:'📅 היסטוריה',mgr:true},{id:'Workers',l:'👥 עובדים',adm:true},{id:'Admin',l:'⚙️ ניהול',adm:true},{id:'AI',l:'🤖 AI'},{id:'Docs',l:'📁 מידע'},{id:'Tickets',l:'📩 פניות'}].filter(x=>(!x.adm||CU.role==='admin')&&(!x.mgr||['admin','area_manager'].includes(CU.role))).forEach(x=>{const b=document.createElement('button');b.className='atab';b.id='t'+x.id;b.textContent=x.l;b.onclick=()=>switchTab(x.id);t.appendChild(b);});}
+function buildTabs(){const t=document.getElementById('atabs');t.innerHTML='';[{id:'Upload',l:'📋 דיווח'},{id:'Dash',l:'📊 דשבורד'},{id:'Missing',l:'🔴 חסרים',mgr:true},{id:'History',l:'📅 היסטוריה',mgr:true},{id:'Workers',l:'👥 עובדים',adm:true},{id:'Admin',l:'⚙️ ניהול',adm:true},{id:'Targets',l:'🎯 יעדים'},{id:'AI',l:'🤖 AI'},{id:'Docs',l:'📁 מידע'},{id:'Tickets',l:'📩 פניות'}].filter(x=>(!x.adm||CU.role==='admin')&&(!x.mgr||['admin','area_manager'].includes(CU.role))).forEach(x=>{const b=document.createElement('button');b.className='atab';b.id='t'+x.id;b.textContent=x.l;b.onclick=()=>switchTab(x.id);t.appendChild(b);});}
 
-function switchTab(id){document.querySelectorAll('.atab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.getElementById('t'+id)?.classList.add('active');document.getElementById('panel'+id)?.classList.add('active');if(id==='Dash')loadRpts();if(id==='Admin')loadActAdmin();if(id==='Missing')initMissing();if(id==='Workers')initWorkers();if(id==='History')initHistory();if(id==='AI')initAI();if(id==='Docs')initDocs();if(id==='Tickets')initTickets();}
+function switchTab(id){document.querySelectorAll('.atab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.getElementById('t'+id)?.classList.add('active');document.getElementById('panel'+id)?.classList.add('active');if(id==='Dash')loadRpts();if(id==='Admin')loadActAdmin();if(id==='Missing')initMissing();if(id==='Workers')initWorkers();if(id==='History')initHistory();if(id==='AI')initAI();if(id==='Docs')initDocs();if(id==='Tickets')initTickets();if(id==='Targets')initTargets();}
 
 // ── ACTIVITIES ──
 async function loadActs(){if(!window.DB)return window.addEventListener('fb-ready',loadActs,{once:true});try{const snap=await window.FB.getDocs(window.FB.collection(window.DB,'activities'));acts=snap.docs.map(d=>(({id:d.id,...d.data()})));renderActUser();}catch(e){console.error(e);}}
@@ -1424,6 +1451,86 @@ window.addEventListener('beforeinstallprompt',(e)=>{e.preventDefault();deferredP
 function installApp(){if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(()=>{deferredPrompt=null;document.getElementById('installBanner').style.display='none';});}}
 window.addEventListener('appinstalled',()=>{document.getElementById('installBanner').style.display='none';});
 if('serviceWorker'in navigator){const swCode="const CACHE='alpa-v1';self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/']))));self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));";const blob=new Blob([swCode],{type:'application/javascript'});navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(()=>{});}
+
+// ===== TARGETS =====
+var targetLinks={};
+
+async function initTargets(){
+  try{
+    const snap=await window.FB.getDoc(window.FB.doc(window.DB,'config','targetLinks'));
+    if(snap.exists())targetLinks=snap.data()||{};
+  }catch(e){targetLinks={};}
+  const isAdmin=CU&&(CU.role==='admin'||CU.role==='targets_manager');
+  document.getElementById('targetsAdminBar').style.display=isAdmin?'block':'none';
+  if(isAdmin)renderTargetsAdmin();
+  renderTargetsUser();
+}
+
+function renderTargetsAdmin(){
+  const sups=['אולגה חוא','שרון כהן','מורן חסון','ליטל גולן','לאה מגן','מפקחת 6','ליה ברט','דייזי קליין'];
+  document.getElementById('targetsAdminList').innerHTML=sups.map(name=>{
+    const lnk=targetLinks[name]||{};
+    return '<div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--gray2)">'+
+      '<div style="font-weight:700;font-size:13px;margin-bottom:6px">👤 '+name+'</div>'+
+      '<div style="font-size:11px;color:var(--gray3);margin-bottom:3px">יעד חודשי:</div>'+
+      '<input class="f-in" data-sup="'+name+'" data-type="monthly" placeholder="קישור Google Drive" value="'+(lnk.monthly||'')+'" style="margin-bottom:6px;font-size:12px"/>'+
+      '<div style="font-size:11px;color:var(--gray3);margin-bottom:3px">יעד ממוקד:</div>'+
+      '<input class="f-in" data-sup="'+name+'" data-type="focused" placeholder="קישור Google Drive" value="'+(lnk.focused||'')+'" style="font-size:12px"/>'+
+      '</div>';
+  }).join('');
+}
+
+async function saveTargetLinks(){
+  document.querySelectorAll('#targetsAdminList input').forEach(inp=>{
+    const sup=inp.dataset.sup,type=inp.dataset.type;
+    if(!targetLinks[sup])targetLinks[sup]={};
+    targetLinks[sup][type]=inp.value.trim();
+  });
+  try{
+    await window.FB.setDoc(window.FB.doc(window.DB,'config','targetLinks'),targetLinks);
+    alert('✅ הקישורים נשמרו!');
+    renderTargetsUser();
+  }catch(e){alert('שגיאה: '+e.message);}
+}
+
+function renderTargetsUser(){
+  const btns=document.getElementById('targetsDownloadBtns');
+  const noLinks=document.getElementById('targetsNoLinks');
+  const isAdmin=CU&&(CU.role==='admin'||CU.role==='targets_manager');
+  const myName=CU?CU.name:'';
+
+  if(isAdmin){
+    const names=Object.keys(targetLinks).filter(n=>targetLinks[n].monthly||targetLinks[n].focused);
+    if(!names.length){btns.innerHTML='';noLinks.style.display='block';return;}
+    noLinks.style.display='none';
+    btns.innerHTML=names.map(name=>{
+      const lnk=targetLinks[name];
+      return '<div style="background:var(--gray);border-radius:10px;padding:10px;text-align:right">'+
+        '<div style="font-size:12px;font-weight:700;margin-bottom:6px;color:var(--gray3)">👤 '+name+'</div>'+
+        (lnk.monthly?'<a href="'+toDriveDownload(lnk.monthly)+'" target="_blank" style="display:block;padding:8px;background:var(--pink);color:#fff;border-radius:8px;text-decoration:none;font-size:13px;font-weight:600;margin-bottom:4px;text-align:center">📥 יעד חודשי</a>':'')+
+        (lnk.focused?'<a href="'+toDriveDownload(lnk.focused)+'" target="_blank" style="display:block;padding:8px;background:#7c3aed;color:#fff;border-radius:8px;text-decoration:none;font-size:13px;font-weight:600;text-align:center">🎯 יעד ממוקד</a>':'')+
+        '</div>';
+    }).join('');
+    return;
+  }
+
+  const myLnk=targetLinks[myName]||{};
+  if(!myLnk.monthly&&!myLnk.focused){btns.innerHTML='';noLinks.style.display='block';return;}
+  noLinks.style.display='none';
+  btns.innerHTML=
+    (myLnk.monthly?'<a href="'+toDriveDownload(myLnk.monthly)+'" target="_blank" style="display:block;padding:14px;background:var(--pink);color:#fff;border-radius:12px;text-decoration:none;font-size:15px;font-weight:700;text-align:center">📥 הורד יעד חודשי</a>':'')+
+    (myLnk.focused?'<a href="'+toDriveDownload(myLnk.focused)+'" target="_blank" style="display:block;padding:14px;background:#7c3aed;color:#fff;border-radius:12px;text-decoration:none;font-size:15px;font-weight:700;text-align:center">🎯 הורד יעד ממוקד</a>':'');
+}
+
+function toDriveDownload(url){
+  const m=url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  if(m)return 'https://drive.google.com/uc?export=download&id='+m[1];
+  const f=url.match(/\/folders\/([a-zA-Z0-9_-]+)/);
+  if(f)return url;
+  return url;
+}
+// ===== END TARGETS =====
+
 </script>
 
 </div></body></html>
