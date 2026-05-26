@@ -1572,10 +1572,12 @@ async function initAI() {
     const snap = await window.FB.getDoc(window.FB.doc(window.DB,'config','menuLinks'));
     if(snap.exists()) menuLinks = snap.data() || {};
   } catch(e) { menuLinks = {}; }
-  try {
-    const snap2 = await window.FB.getDoc(window.FB.doc(window.DB,'config','targetLinks'));
-    if(snap2.exists()) window._targetLinks = snap2.data() || {};
-  } catch(e) { window._targetLinks = {}; }
+  if(!Object.keys(targetLinks).length){
+    try{
+      const snap2 = await window.FB.getDoc(window.FB.doc(window.DB,'config','targetLinks'));
+      if(snap2.exists()){const d=snap2.data();Object.assign(targetLinks,d);}
+    }catch(e){}
+  }
   aiHistory = [];
   aiRenderMain();
 }
@@ -1640,10 +1642,8 @@ function aiChoose(id, level) {
   // Handle download
   if (item.action === 'download_personal') {
     const myName = CU ? CU.name : '';
-    const personalLinks = menuLinks['personal_' + myName] || menuLinks[myName] || {};
-    // Try targetLinks first
-    const tl = window._targetLinks || {};
-    const url = (tl[myName] || {})[item.key] || personalLinks[item.key] || menuLinks[item.key] || '';
+    const tl = (typeof targetLinks !== 'undefined' ? targetLinks : {});
+    const url = (tl[myName] || {})[item.key] || menuLinks[item.key] || '';
     if (url) {
       addAiMessage('bot', '✅ הקובץ מוכן! לחץ להורדה 👇');
       document.getElementById('aiChoices').innerHTML =
