@@ -1571,6 +1571,10 @@ async function initAI() {
     const snap = await window.FB.getDoc(window.FB.doc(window.DB, 'config', 'menuLinks'));
     if (snap.exists()) menuLinks = snap.data() || {};
   } catch(e) { menuLinks = {}; }
+  try {
+    const snap2 = await window.FB.getDoc(window.FB.doc(window.DB, 'config', 'targetLinks'));
+    if (snap2.exists()) window._targetLinks = snap2.data() || {};
+  } catch(e) { window._targetLinks = {}; }
   aiHistory = [];
   aiRenderMain();
 }
@@ -1593,18 +1597,16 @@ function aiRenderMain() {
 
 function renderAiChoices(items, level) {
   const container = document.getElementById('aiChoices');
-  container.innerHTML = items.map(item => {
+  container.innerHTML = '';
+  items.forEach(function(item) {
     const lnk = menuLinks[item.key] || (item.children ? 'has_children' : '');
     const available = item.children ? true : !!lnk;
-    const unavailClass = available ? '' : 'opacity:.45;filter:grayscale(1);';
-    return '<button onclick="aiChoose(\'' + item.id + '\',\'' + level + '\')" style="' +
-      'width:100%;padding:12px 14px;border-radius:12px;border:1.5px solid var(--gray2);' +
-      'background:var(--white);color:var(--text);font-size:14px;font-weight:600;' +
-      'cursor:' + (available ? 'pointer' : 'default') + ';font-family:Heebo,sans-serif;' +
-      'text-align:right;transition:all .15s;' + unavailClass + '">' +
-      item.label + (available ? '' : ' <span style="font-size:11px;color:var(--gray3)">(בקרוב)</span>') +
-      '</button>';
-  }).join('');
+    const btn = document.createElement('button');
+    btn.style.cssText = 'width:100%;padding:12px 14px;border-radius:12px;border:1.5px solid var(--gray2);background:var(--white);color:var(--text);font-size:14px;font-weight:600;cursor:' + (available ? 'pointer' : 'default') + ';font-family:Heebo,sans-serif;text-align:right;transition:all .15s;' + (available ? '' : 'opacity:.45;filter:grayscale(1);');
+    btn.innerHTML = item.label + (available ? '' : ' <span style="font-size:11px;color:var(--gray3)">(בקרוב)</span>');
+    if(available) btn.onclick = function(){ aiChoose(item.id, level); };
+    container.appendChild(btn);
+  });
 }
 
 function aiChoose(id, level) {
