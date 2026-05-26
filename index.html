@@ -422,47 +422,22 @@ input,select,textarea,button{font-family:'Heebo',sans-serif}
   <!-- AI PANEL -->
   <div class="panel" id="panelAI">
     <div style="max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:0">
-      <div style="display:flex;gap:6px;padding:0 0 10px">
-        <button id="aiTab1" onclick="aiSwitch('chat')" style="flex:1;padding:9px;border-radius:10px;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:Heebo,sans-serif;background:var(--pink);color:#fff">💬 צ&#39;אט</button>
-        <button id="aiTab2" onclick="aiSwitch('analyze')" style="flex:1;padding:9px;border-radius:10px;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:Heebo,sans-serif;background:#fff;color:var(--gray3);border:1.5px solid var(--gray2)">📸 ניתוח תמונה</button>
+
+      <!-- Chat messages area -->
+      <div id="aiChatArea" style="display:flex;flex-direction:column;gap:10px;padding-bottom:8px;min-height:300px"></div>
+
+      <!-- Choice buttons area -->
+      <div id="aiChoices" style="display:flex;flex-direction:column;gap:8px;padding-top:4px"></div>
+
+      <!-- Back button -->
+      <div style="margin-top:10px;text-align:center">
+        <button id="aiBackBtn" onclick="aiBack()" style="display:none;background:none;border:1px solid var(--gray2);border-radius:8px;padding:7px 18px;font-size:13px;color:var(--gray3);cursor:pointer;font-family:Heebo,sans-serif">← חזור</button>
       </div>
-      <div id="aiChatPane">
-        <div id="aiMsgs" style="display:flex;flex-direction:column;gap:10px;min-height:200px;margin-bottom:12px">
-          <div style="display:flex;gap:8px">
-            <div style="width:30px;height:30px;border-radius:50%;background:var(--pink);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0">A</div>
-            <div style="background:#fff;border-radius:12px;border-top-right-radius:3px;padding:10px 13px;font-size:13px;line-height:1.6;box-shadow:0 1px 4px rgba(0,0,0,.06);max-width:85%">שלום! אני העוזר החכם של ALPA 👋<br>מה אפשר לעזור?</div>
-          </div>
-        </div>
-        <div id="aiImgPrev" style="display:none;margin-bottom:8px;align-items:center;gap:8px">
-          <img id="aiImgThumb" style="height:40px;width:40px;object-fit:cover;border-radius:8px;border:1px solid var(--gray2)"/>
-          <span style="font-size:11px;color:var(--gray3)">תמונה מצורפת</span>
-          <button onclick="aiClearImg()" style="background:none;border:none;font-size:14px;color:var(--gray3);cursor:pointer">✕</button>
-        </div>
-        <div style="display:flex;gap:8px;align-items:flex-end;background:#fff;border-radius:12px;border:1.5px solid var(--gray2);padding:8px 10px">
-          <button onclick="document.getElementById('aiFileInp').click()" style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--gray3);flex-shrink:0">📎</button>
-          <input type="file" id="aiFileInp" accept="image/*" style="display:none" onchange="aiAttach(this)"/>
-          <textarea id="aiInp" placeholder="שאל משהו..." rows="1" style="flex:1;border:none;outline:none;font-size:13px;font-family:Heebo,sans-serif;resize:none;max-height:80px;overflow-y:auto;line-height:1.5;direction:rtl" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();aiSend();}"></textarea>
-          <button onclick="aiSend()" style="background:var(--pink);border:none;border-radius:10px;padding:6px 12px;font-size:12px;font-weight:700;color:#fff;cursor:pointer;font-family:Heebo,sans-serif;flex-shrink:0">שלח</button>
-        </div>
-      </div>
-      <div id="aiAnalyzePane" style="display:none;flex-direction:column;gap:12px">
-        <div onclick="document.getElementById('anFileInp').click()" style="border:2px dashed var(--gray2);border-radius:12px;padding:24px;text-align:center;cursor:pointer">
-          <div id="anEmpty"><div style="font-size:36px;margin-bottom:8px">📸</div><div style="font-size:13px;font-weight:600;color:#555">העלה תמונה מהשטח</div><div style="font-size:11px;color:var(--gray3);margin-top:4px">Claude ינתח אם הכל בסדר</div></div>
-          <div id="anPrevWrap" style="display:none;flex-direction:column;align-items:center;gap:8px"><img id="anPrev" style="max-height:200px;border-radius:10px;object-fit:contain"/><span style="font-size:11px;color:var(--gray3)">לחץ להחלפה</span></div>
-        </div>
-        <input type="file" id="anFileInp" accept="image/*" style="display:none" onchange="anLoad(this)"/>
-        <input class="f-in" id="anDesc" placeholder="תאר את הפעילות (אופציונלי)"/>
-        <button onclick="anRun()" id="anBtn" style="width:100%;background:var(--pink);border:none;border-radius:12px;padding:13px;font-size:15px;font-weight:700;color:#fff;cursor:pointer;font-family:Heebo,sans-serif;opacity:.4" disabled>🔍 נתח תמונה</button>
-        <div id="anResult" style="display:none;background:#fff;border-radius:12px;padding:14px;box-shadow:0 1px 4px rgba(0,0,0,.06)">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><div style="width:26px;height:26px;border-radius:50%;background:var(--pink);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff">A</div><span style="font-size:11px;font-weight:700;color:var(--pink)">תוצאות ניתוח</span></div>
-          <div id="anResultTxt" style="font-size:13px;color:#333;line-height:1.7;white-space:pre-wrap"></div>
-          <button onclick="anReset()" style="margin-top:10px;background:none;border:none;font-size:11px;color:var(--gray3);cursor:pointer">ניתוח חדש</button>
-        </div>
-      </div>
+
     </div>
   </div>
 
-  <!-- DOCS PANEL -->
+<!-- DOCS PANEL -->
   <div class="panel" id="panelDocs">
     <div style="max-width:560px;margin:0 auto">
       <div id="docsAdminBar" style="display:none;margin-bottom:12px">
@@ -661,6 +636,12 @@ input,select,textarea,button{font-family:'Heebo',sans-serif}
       <div class="acard">
         <div style="font-size:15px;font-weight:700;margin-bottom:14px">⚙️ ניהול קישורי יעדים</div>
         <div id="targetsAdminList"></div>
+
+        <div style="margin-top:18px;padding-top:14px;border-top:2px solid var(--gray2)">
+          <div style="font-size:15px;font-weight:700;margin-bottom:14px">📁 ניהול קישורי תפריט</div>
+          <div id="menuAdminList"></div>
+          <button onclick="saveMenuLinks()" style="margin-top:10px;width:100%;padding:11px;background:#2C2C2C;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:Heebo,sans-serif">💾 שמור קישורי תפריט</button>
+        </div>
         <button onclick="saveTargetLinks()" style="margin-top:10px;width:100%;padding:11px;background:var(--pink);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:Heebo,sans-serif">💾 שמור קישורים</button>
       </div>
     </div>
@@ -1462,7 +1443,7 @@ async function initTargets(){
   }catch(e){targetLinks={};}
   const isAdmin=CU&&(CU.role==='admin'||CU.role==='targets_manager');
   document.getElementById('targetsAdminBar').style.display=isAdmin?'block':'none';
-  if(isAdmin)renderTargetsAdmin();
+  if(isAdmin){renderTargetsAdmin();renderMenuAdmin();}
   renderTargetsUser();
 }
 
@@ -1530,6 +1511,229 @@ function toDriveDownload(url){
   return url;
 }
 // ===== END TARGETS =====
+
+
+// ===== CHAT MENU =====
+var menuLinks = {};
+var aiHistory = [];
+
+var MENU_STRUCTURE = [
+  {
+    id: 'targets', label: '🎯 יעדים', role: 'all',
+    children: [
+      {id: 'target_monthly', label: '📥 יעד חודשי', role: 'all', action: 'download_personal', key: 'monthly'},
+      {id: 'target_focused', label: '🎯 יעד ממוקד', role: 'all', action: 'download_personal', key: 'focused'},
+    ]
+  },
+  {
+    id: 'orders', label: '📋 טפסי הזמנה', role: 'all',
+    children: [
+      {id: 'order_chanel',    label: 'CHANEL',    role: 'all', action: 'download', key: 'order_chanel'},
+      {id: 'order_guerlain',  label: 'GUERLAIN',  role: 'all', action: 'download', key: 'order_guerlain'},
+      {id: 'order_givenchy',  label: 'GIVENCHY',  role: 'all', action: 'download', key: 'order_givenchy'},
+      {id: 'order_clarins',   label: 'CLARINS',   role: 'all', action: 'download', key: 'order_clarins'},
+      {id: 'order_arden',     label: 'ARDEN',     role: 'all', action: 'download', key: 'order_arden'},
+      {id: 'order_nivea',     label: 'NIVEA',     role: 'all', action: 'download', key: 'order_nivea'},
+      {id: 'order_elemis',    label: 'ELEMIS',    role: 'all', action: 'download', key: 'order_elemis'},
+      {id: 'order_bishum',    label: 'בישום',     role: 'all', action: 'download', key: 'order_bishum'},
+    ]
+  },
+  {
+    id: 'planograms', label: '🗂️ פלנוגרמות', role: 'all',
+    children: [
+      {id: 'plano_chanel',    label: 'CHANEL',    role: 'all', action: 'download', key: 'plano_chanel'},
+      {id: 'plano_guerlain',  label: 'GUERLAIN',  role: 'all', action: 'download', key: 'plano_guerlain'},
+      {id: 'plano_givenchy',  label: 'GIVENCHY',  role: 'all', action: 'download', key: 'plano_givenchy'},
+      {id: 'plano_clarins',   label: 'CLARINS',   role: 'all', action: 'download', key: 'plano_clarins'},
+      {id: 'plano_arden',     label: 'ARDEN',     role: 'all', action: 'download', key: 'plano_arden'},
+      {id: 'plano_nivea',     label: 'NIVEA',     role: 'all', action: 'download', key: 'plano_nivea'},
+      {id: 'plano_elemis',    label: 'ELEMIS',    role: 'all', action: 'download', key: 'plano_elemis'},
+      {id: 'plano_bishum',    label: 'בישום',     role: 'all', action: 'download', key: 'plano_bishum'},
+    ]
+  },
+  {
+    id: 'promo', label: '🌟 מבצעי החודש', role: 'all',
+    children: [
+      {id: 'promo_file', label: '📥 הורד מבצעי החודש', role: 'all', action: 'download', key: 'promo_file'},
+    ]
+  },
+  {
+    id: 'supervisor', label: '👥 טפסי מפקחות', role: 'supervisor',
+    children: [
+      {id: 'form_recruit', label: '📝 טופס גיוס',   role: 'supervisor', action: 'download', key: 'form_recruit'},
+      {id: 'form_hearing', label: '⚖️ טופס שימוע', role: 'supervisor', action: 'download', key: 'form_hearing'},
+    ]
+  },
+];
+
+async function initAI() {
+  try {
+    const snap = await window.FB.getDoc(window.FB.doc(window.DB, 'config', 'menuLinks'));
+    if (snap.exists()) menuLinks = snap.data() || {};
+  } catch(e) { menuLinks = {}; }
+  aiHistory = [];
+  aiRenderMain();
+}
+
+function aiRenderMain() {
+  aiHistory = [];
+  document.getElementById('aiBackBtn').style.display = 'none';
+  const isSup = CU && ['admin','area_manager','supervisor'].includes(CU.role);
+
+  // Greeting message
+  addAiMessage('bot', '👋 שלום ' + (CU ? CU.name.split(' ')[0] : '') + '! במה אוכל לעזור?');
+
+  // Top level choices
+  const visible = MENU_STRUCTURE.filter(item => {
+    if (item.role === 'supervisor' && !isSup) return false;
+    return true;
+  });
+  renderAiChoices(visible, 'main');
+}
+
+function renderAiChoices(items, level) {
+  const container = document.getElementById('aiChoices');
+  container.innerHTML = items.map(item => {
+    const lnk = menuLinks[item.key] || (item.children ? 'has_children' : '');
+    const available = item.children ? true : !!lnk;
+    const unavailClass = available ? '' : 'opacity:.45;filter:grayscale(1);';
+    return '<button onclick="aiChoose('' + item.id + '','' + level + '')" style="' +
+      'width:100%;padding:12px 14px;border-radius:12px;border:1.5px solid var(--gray2);' +
+      'background:var(--white);color:var(--text);font-size:14px;font-weight:600;' +
+      'cursor:' + (available ? 'pointer' : 'default') + ';font-family:Heebo,sans-serif;' +
+      'text-align:right;transition:all .15s;' + unavailClass + '">' +
+      item.label + (available ? '' : ' <span style="font-size:11px;color:var(--gray3)">(בקרוב)</span>') +
+      '</button>';
+  }).join('');
+}
+
+function aiChoose(id, level) {
+  // Find item
+  let item = null;
+  let parent = null;
+  for (const top of MENU_STRUCTURE) {
+    if (top.id === id) { item = top; break; }
+    if (top.children) {
+      for (const child of top.children) {
+        if (child.id === id) { item = child; parent = top; break; }
+      }
+    }
+    if (item) break;
+  }
+  if (!item) return;
+
+  // Add user message
+  addAiMessage('user', item.label);
+
+  if (item.children) {
+    // Show sub-menu
+    aiHistory.push({items: MENU_STRUCTURE.filter(x => x.role !== 'supervisor' || ['admin','area_manager','supervisor'].includes(CU.role)), level: 'main'});
+    addAiMessage('bot', 'בחר קובץ:');
+    renderAiChoices(item.children, item.id);
+    document.getElementById('aiBackBtn').style.display = 'inline-block';
+    return;
+  }
+
+  // Handle download
+  if (item.action === 'download_personal') {
+    const myName = CU ? CU.name : '';
+    const personalLinks = menuLinks['personal_' + myName] || menuLinks[myName] || {};
+    // Try targetLinks first
+    const tl = window._targetLinks || {};
+    const url = (tl[myName] || {})[item.key] || personalLinks[item.key] || menuLinks[item.key] || '';
+    if (url) {
+      addAiMessage('bot', '✅ הקובץ מוכן! לחץ להורדה 👇');
+      document.getElementById('aiChoices').innerHTML =
+        '<a href="' + url + '" target="_blank" style="display:block;padding:13px;background:var(--pink);color:#fff;border-radius:12px;text-decoration:none;font-size:15px;font-weight:700;text-align:center">📥 הורד קובץ</a>';
+    } else {
+      addAiMessage('bot', '⚠️ הקובץ האישי שלך עדיין לא הועלה. פנה למנהל.');
+      document.getElementById('aiChoices').innerHTML = '';
+    }
+  } else {
+    const url = menuLinks[item.key] || '';
+    if (url) {
+      addAiMessage('bot', '✅ הקובץ מוכן! לחץ להורדה 👇');
+      document.getElementById('aiChoices').innerHTML =
+        '<a href="' + url + '" target="_blank" style="display:block;padding:13px;background:var(--pink);color:#fff;border-radius:12px;text-decoration:none;font-size:15px;font-weight:700;text-align:center">📥 הורד קובץ</a>';
+    } else {
+      addAiMessage('bot', '⚠️ הקובץ עדיין לא זמין. נסה מאוחר יותר.');
+      document.getElementById('aiChoices').innerHTML = '';
+    }
+  }
+  document.getElementById('aiBackBtn').style.display = 'inline-block';
+}
+
+function aiBack() {
+  document.getElementById('aiChatArea').innerHTML = '';
+  document.getElementById('aiChoices').innerHTML = '';
+  if (aiHistory.length) {
+    const prev = aiHistory.pop();
+    addAiMessage('bot', aiHistory.length === 0 ? '👋 שלום ' + (CU ? CU.name.split(' ')[0] : '') + '! במה אוכל לעזור?' : 'בחר קובץ:');
+    renderAiChoices(prev.items, prev.level);
+    if (!aiHistory.length) document.getElementById('aiBackBtn').style.display = 'none';
+  } else {
+    aiRenderMain();
+  }
+}
+
+function addAiMessage(type, text) {
+  const area = document.getElementById('aiChatArea');
+  const div = document.createElement('div');
+  const isBot = type === 'bot';
+  div.style.cssText = 'display:flex;justify-content:' + (isBot ? 'flex-end' : 'flex-start') + ';';
+  div.innerHTML = '<div style="max-width:80%;padding:10px 14px;border-radius:' +
+    (isBot ? '16px 16px 4px 16px' : '16px 16px 16px 4px') +
+    ';background:' + (isBot ? 'var(--pink)' : 'var(--gray)') +
+    ';color:' + (isBot ? '#fff' : 'var(--text)') +
+    ';font-size:14px;line-height:1.4">' + text + '</div>';
+  area.appendChild(div);
+  area.scrollTop = area.scrollHeight;
+}
+
+// Store target links globally for personal downloads
+var _origInitTargets = typeof initTargets !== 'undefined' ? initTargets : null;
+// ===== END CHAT MENU =====
+
+
+function renderMenuAdmin(){
+  const MENU_KEYS = [
+    {key:'order_chanel',    label:'טופס הזמנה — CHANEL'},
+    {key:'order_guerlain',  label:'טופס הזמנה — GUERLAIN'},
+    {key:'order_givenchy',  label:'טופס הזמנה — GIVENCHY'},
+    {key:'order_clarins',   label:'טופס הזמנה — CLARINS'},
+    {key:'order_arden',     label:'טופס הזמנה — ARDEN'},
+    {key:'order_nivea',     label:'טופס הזמנה — NIVEA'},
+    {key:'order_elemis',    label:'טופס הזמנה — ELEMIS'},
+    {key:'order_bishum',    label:'טופס הזמנה — בישום'},
+    {key:'plano_chanel',    label:'פלנוגרמה — CHANEL'},
+    {key:'plano_guerlain',  label:'פלנוגרמה — GUERLAIN'},
+    {key:'plano_givenchy',  label:'פלנוגרמה — GIVENCHY'},
+    {key:'plano_clarins',   label:'פלנוגרמה — CLARINS'},
+    {key:'plano_arden',     label:'פלנוגרמה — ARDEN'},
+    {key:'plano_nivea',     label:'פלנוגרמה — NIVEA'},
+    {key:'plano_elemis',    label:'פלנוגרמה — ELEMIS'},
+    {key:'plano_bishum',    label:'פלנוגרמה — בישום'},
+    {key:'promo_file',      label:'מבצעי החודש'},
+    {key:'form_recruit',    label:'טופס גיוס'},
+    {key:'form_hearing',    label:'טופס שימוע'},
+  ];
+  document.getElementById('menuAdminList').innerHTML = MENU_KEYS.map(item =>
+    '<div style="margin-bottom:8px">'+
+    '<div style="font-size:11px;color:var(--gray3);margin-bottom:2px">'+item.label+'</div>'+
+    '<input class="f-in" data-key="'+item.key+'" placeholder="קישור Google Drive" value="'+(menuLinks[item.key]||'')+'" style="font-size:12px"/>'+
+    '</div>'
+  ).join('');
+}
+
+async function saveMenuLinks(){
+  document.querySelectorAll('#menuAdminList input').forEach(inp=>{
+    menuLinks[inp.dataset.key]=inp.value.trim();
+  });
+  try{
+    await window.FB.setDoc(window.FB.doc(window.DB,'config','menuLinks'),menuLinks);
+    alert('✅ קישורי התפריט נשמרו!');
+  }catch(e){alert('שגיאה: '+e.message);}
+}
 
 </script>
 
