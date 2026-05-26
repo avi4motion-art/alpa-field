@@ -1953,7 +1953,7 @@ async function initPasswords() {
 function renderPasswordAdmin() {
   const container = document.getElementById('passwordAdminList');
   if(!container) return;
-  const nonAdmins = Object.entries(USERS).filter(([e,u]) => u.role !== 'admin');
+  const nonAdmins = Object.entries(USERS);
   container.innerHTML = nonAdmins.map(([email, u]) =>
     '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">' +
     '<div style="flex:1;font-size:13px;font-weight:600">' + u.name + '</div>' +
