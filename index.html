@@ -20,10 +20,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import{getFirestore,collection,addDoc,getDocs,query,orderBy,doc,updateDoc}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import{getFirestore,collection,addDoc,getDocs,query,orderBy,doc,updateDoc,setDoc,getDoc,deleteDoc}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 const cfg={apiKey:"AIzaSyAkR0C81bfYjONkpC_tGJLmLLQy3zP-aLI",authDomain:"project-alpa-9bb74.firebaseapp.com",projectId:"project-alpa-9bb74",storageBucket:"project-alpa-9bb74.firebasestorage.app",messagingSenderId:"940451079699",appId:"1:940451079699:web:db426eaf80d2238f9f41e6"};
 const app=initializeApp(cfg);const db=getFirestore(app);
-window.DB=db;window.FB={collection,addDoc,getDocs,query,orderBy,doc,updateDoc};
+window.DB=db;window.FB={collection,addDoc,getDocs,query,orderBy,doc,updateDoc,setDoc,getDoc,deleteDoc};
 window.dispatchEvent(new Event('fb-ready'));
 </script>
 <style>
