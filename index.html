@@ -1021,20 +1021,50 @@ function clrAllBC(){csvIds.clear();renderBC(document.getElementById('bcSrch').va
 
 function handleCSV(inp){
   const f=inp.files[0];if(!f)return;
-  const r=new FileReader();
-  r.onload=e=>{
-    const txt=e.target.result;
-    const matches=txt.match(/\d{7}/g)||[];
+  const isExcel=/\.(xlsx|xls)$/i.test(f.name);
+  function processText(txt){
+    const matches=txt.match(/\d{7}/g)||[];
     const found=new Set(matches);let matched=0;
-    found.forEach(id=>{if(BR.find(b=>b.i===id)){csvIds.add(id);matched++;}  });
+    found.forEach(id=>{if(BR.find(b=>b.i===id)){csvIds.add(id);matched++;}});
     const res=document.getElementById('csvRes');
     res.className='csv-res '+(matched>0?'csv-ok':'csv-err');
     res.textContent=matched>0?`✅ נמצאו ${matched} סניפים תואמים מתוך ${found.size} מזהים`:`❌ לא נמצאו מזהים תואמים`;
     renderBC(document.getElementById('bcSrch').value);
-  };
-  r.readAsText(f,'UTF-8');
+  }
+  function parseExcel(ab){
+    try{
+      const wb=window.XLSX.read(new Uint8Array(ab),{type:'array'});
+      let allText='';
+      wb.SheetNames.forEach(name=>{allText+=window.XLSX.utils.sheet_to_csv(wb.Sheets[name])+'\n';});
+      processText(allText);
+    }catch(e){
+      const res=document.getElementById('csvRes');
+      res.className='csv-res csv-err';
+      res.textContent='❌ שגיאה בקריאת Excel: '+e.message;
+    }
+  }
+  if(isExcel){
+    const r=new FileReader();
+    r.onload=e=>{
+      if(window.XLSX){parseExcel(e.target.result);}
+      else{
+        const res=document.getElementById('csvRes');
+        res.className='csv-res csv-err';
+        res.textContent='⏳ טוען ספריית Excel...';
+        const s=document.createElement('script');
+        s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+        s.onload=()=>parseExcel(e.target.result);
+        s.onerror=()=>{res.textContent='❌ שמור את הקובץ כ-CSV ונסה שוב';};
+        document.head.appendChild(s);
+      }
+    };
+    r.readAsArrayBuffer(f);
+  }else{
+    const r=new FileReader();
+    r.onload=e=>processText(e.target.result);
+    r.readAsText(f,'UTF-8');
+  }
 }
-
 function pickIco(el){pickedIco=el.dataset.i;document.querySelectorAll('.ico-o').forEach(e=>e.classList.remove('on'));el.classList.add('on');}
 
 async function saveAct(){
