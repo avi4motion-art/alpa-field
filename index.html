@@ -815,7 +815,6 @@ const toDay=()=>new Date().toISOString().split('T')[0];
 let CU=null,selB=null,activeNet='',reports=[],acts=[],selAct=null,imgData=null,pickedIco='🎤',editId=null,mNet='',csvIds=new Set(),repBr=null;
 
 // ── LOGIN INIT ──
-(function(){;
 
 function filterBr(){const q=document.getElementById('bSrch').value.trim().toLowerCase();const dd=document.getElementById('brDD');const res=BR.filter(b=>(!activeNet||b.net===activeNet)&&(!q||b.n.toLowerCase().includes(q)||b.i.includes(q)||b.num.includes(q))).slice(0,60);dd.innerHTML=res.length?res.map(b=>`<div class="bopt" onclick="pickBr('${b.i}')"><div class="bn">${b.n}</div><div class="bm">${b.net} · מזהה: ${b.i}${b.num?' · סניף #'+b.num:''}</div></div>`).join(''):'<div class="bopt" style="color:#999">לא נמצאו</div>';dd.style.display='block';}
 function showBDD(){if(!selB)filterBr();}
