@@ -56,19 +56,6 @@ input,select,textarea,button{font-family:'Heebo',sans-serif}
 .sv-br{font-size:12px;color:var(--pink-light);margin-top:3px}
 .sv-h{font-size:11px;color:rgba(255,255,255,.25);margin-top:5px}
 .or-dv{text-align:center;font-size:11px;color:rgba(255,255,255,.18);letter-spacing:1px;margin:.7rem 0;display:none}
-.bwrap{position:relative}
-.bdd{position:absolute;top:calc(100% + 6px);right:0;left:0;background:#fff;border-radius:12px;box-shadow:var(--shl);max-height:220px;overflow-y:auto;z-index:200;display:none}
-.bopt{padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--gray2)}
-.bopt:last-child{border-bottom:none}.bopt:hover{background:var(--gray)}
-.bopt .bn{font-size:13px;font-weight:500;color:var(--text)}
-.bopt .bm{font-size:11px;color:var(--gray3);margin-top:2px}
-.sel-b{background:rgba(233,30,140,.12);border:1px solid rgba(233,30,140,.3);border-radius:12px;padding:10px 14px;margin-top:8px;cursor:pointer;display:none}
-.sel-b .bn{font-size:14px;font-weight:600;color:var(--pink)}
-.sel-b .bm{font-size:11px;color:rgba(255,255,255,.35);margin-top:2px}
-.sel-b .chg{font-size:11px;color:rgba(255,255,255,.2);margin-top:4px}
-.npills{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
-.npill{font-size:11px;padding:4px 10px;border-radius:99px;border:1px solid rgba(255,255,255,.15);background:none;cursor:pointer;color:rgba(255,255,255,.45);transition:all .15s}
-.npill.on{background:var(--pink);color:#fff;border-color:var(--pink)}
 
 /* HEADER */
 .ah{background:var(--dark);padding:0 16px;height:54px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 20px rgba(0,0,0,.3)}
@@ -158,6 +145,8 @@ input,select,textarea,button{font-family:'Heebo',sans-serif}
 .rc-br{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rc-mt{font-size:11px;color:var(--gray3);margin-top:2px}
 .rc-nt{font-size:12px;color:#555;margin-top:5px;padding-top:5px;border-top:1px solid var(--gray2)}
+.rc-del{background:none;border:none;color:#fca5a5;font-size:11px;cursor:pointer;padding:2px 6px;border-radius:6px;margin-top:4px;font-family:'Heebo',sans-serif;transition:all .15s}
+.rc-del:hover{background:#fee2e2;color:#dc2626}
 .empty-d{text-align:center;padding:4rem 1rem;color:var(--gray3);font-size:14px}
 .ld-s{text-align:center;padding:2.5rem;color:var(--gray3);font-size:13px}
 
@@ -235,17 +224,7 @@ input,select,textarea,button{font-family:'Heebo',sans-serif}
     <input class="fi" type="email" id="lEmail" placeholder="your@alpa-cosmetics.co.il" autocomplete="email">
     <div class="fl">סיסמא</div>
     <input class="fi" type="password" id="lPass" placeholder="סיסמא" autocomplete="current-password">
-    <div class="fl">סניף (לסוכנים ומפקחות)</div>
-    <div class="bwrap">
-      <input class="fi" type="text" id="bSrch" placeholder="חפש שם / מזהה / מספר סניף..." oninput="filterBr()" onfocus="showBDD()" autocomplete="off">
-      <div class="npills" id="netPills"><button class="npill" title="המשביר">המשביר</button><button class="npill" title="סופר פארם">סופר</button><button class="npill" title="ביי פארם">ביי</button><button class="npill" title="אפריל">אפריל</button><button class="npill" title="המשביר">המשביר</button><button class="npill" title="סופר פארם">סופר</button><button class="npill" title="ביי פארם">ביי</button><button class="npill" title="אפריל">אפריל</button></div>
-      <div class="bdd" id="brDD"></div>
-    </div>
-    <div class="sel-b" id="selBox" onclick="clearBr()">
-      <div class="bn" id="selNm"></div>
-      <div class="bm" id="selMt"></div>
-      <div class="chg">לחץ לשינוי</div>
-    </div>
+
     <div class="lerr" id="lerr">נא למלא אימייל</div>
     <button class="btn-lg" onclick="doLogin()">כניסה</button>
   </div>
@@ -836,11 +815,7 @@ const toDay=()=>new Date().toISOString().split('T')[0];
 let CU=null,selB=null,activeNet='',reports=[],acts=[],selAct=null,imgData=null,pickedIco='🎤',editId=null,mNet='',csvIds=new Set(),repBr=null;
 
 // ── LOGIN INIT ──
-(function(){
-  const np=document.getElementById('netPills');
-  NETS.forEach(n=>{const b=document.createElement('button');b.className='npill';b.textContent=n.split(' ')[0];b.title=n;b.onclick=()=>{activeNet=activeNet===n?'':n;document.querySelectorAll('.npill').forEach(x=>x.classList.remove('on'));if(activeNet)b.classList.add('on');filterBr();};np.appendChild(b);});
-  try{const s=JSON.parse(localStorage.getItem(SK));if(s?.email){document.getElementById('svEm').textContent=s.email;document.getElementById('svBr').textContent=(s.branchName||'')+(s.network?' · '+s.network:'');document.getElementById('svBanner').style.display='block';document.getElementById('orDv').style.display='block';}}catch(e){}
-})();
+(function(){;
 
 function filterBr(){const q=document.getElementById('bSrch').value.trim().toLowerCase();const dd=document.getElementById('brDD');const res=BR.filter(b=>(!activeNet||b.net===activeNet)&&(!q||b.n.toLowerCase().includes(q)||b.i.includes(q)||b.num.includes(q))).slice(0,60);dd.innerHTML=res.length?res.map(b=>`<div class="bopt" onclick="pickBr('${b.i}')"><div class="bn">${b.n}</div><div class="bm">${b.net} · מזהה: ${b.i}${b.num?' · סניף #'+b.num:''}</div></div>`).join(''):'<div class="bopt" style="color:#999">לא נמצאו</div>';dd.style.display='block';}
 function showBDD(){if(!selB)filterBr();}
@@ -970,7 +945,7 @@ function renderDash(){
   const l=document.getElementById('rlist');
   if(!f.length){l.innerHTML='<div class="empty-d">📭<br>אין דיווחים להצגה</div>';return;}
   renderActProgress();
-  l.innerHTML=f.map(r=>`<div class="rc"><img class="rc-img" src="${r.img}" loading="lazy" onclick="openLB(this.src,this.dataset.info)" data-info="${(r.branchName||'').replace(/"/g,'')+ ' · ' +(r.activityName||'').replace(/"/g,'')+ ' · ' +(r.date||'')}" style="cursor:pointer"/><div class="rc-info"><div class="rc-act">${r.activityIcon||'📋'} ${r.activityName||'—'}</div><div class="rc-br">${r.branchName||'—'}${r.branchNum?' (#'+r.branchNum+')':''}</div><div class="rc-mt">${r.workerName} · ${r.date} ${r.time}${r.network?' · '+r.network:''}</div>${r.note?`<div class="rc-nt">${r.note}</div>`:''}</div></div>`).join('');
+  l.innerHTML=f.map(r=>`<div class="rc"><img class="rc-img" src="${r.img}" loading="lazy" onclick="openLB(this.src,this.dataset.info)" data-info="${(r.branchName||'').replace(/"/g,'')+ ' · ' +(r.activityName||'').replace(/"/g,'')+ ' · ' +(r.date||'')}" style="cursor:pointer"/><div class="rc-info"><div class="rc-act">${r.activityIcon||'📋'} ${r.activityName||'—'}</div><div class="rc-br">${r.branchName||'—'}${r.branchNum?' (#'+r.branchNum+')':''}</div><div class="rc-mt">${r.workerName} · ${r.date} ${r.time}${r.network?' · '+r.network:''}</div>${r.note?`<div class="rc-nt">${r.note}</div>`:''} ${r.workerEmail===CU.email||CU.role==='admin'?`<button class="rc-del" onclick="deleteRpt('${r.id}',event)">🗑️ מחק</button>`:''}</div></div>`).join('');
 }
 
 // ── ADMIN ──
@@ -1370,6 +1345,16 @@ function showMissing(filter) {
 }
 
 
+async function deleteRpt(id, e){
+  e.stopPropagation();
+  if(!confirm('למחוק את הדיווח?')) return;
+  try{
+    const {deleteDoc}=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    await deleteDoc(window.FB.doc(window.DB,'reports',id));
+    reports=reports.filter(r=>r.id!==id);
+    renderDash();
+  }catch(err){alert('שגיאה: '+err.message);}
+}
 function fmtD(d){if(!d)return'—';const[y,m,day]=d.split('-');return day+'.'+m+'.'+y;}
 window.addEventListener('fb-ready',()=>console.log('✅ Firebase'));
 </script>
