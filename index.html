@@ -816,11 +816,11 @@ let CU=null,selB=null,activeNet='',reports=[],acts=[],selAct=null,imgData=null,p
 
 // ── LOGIN INIT ──
 
-function filterBr(){const q=document.getElementById('bSrch').value.trim().toLowerCase();const dd=document.getElementById('brDD');const res=BR.filter(b=>(!activeNet||b.net===activeNet)&&(!q||b.n.toLowerCase().includes(q)||b.i.includes(q)||b.num.includes(q))).slice(0,60);dd.innerHTML=res.length?res.map(b=>`<div class="bopt" onclick="pickBr('${b.i}')"><div class="bn">${b.n}</div><div class="bm">${b.net} · מזהה: ${b.i}${b.num?' · סניף #'+b.num:''}</div></div>`).join(''):'<div class="bopt" style="color:#999">לא נמצאו</div>';dd.style.display='block';}
+function filterBr(){const bSrch=document.getElementById('bSrch');const dd=document.getElementById('brDD');if(!bSrch||!dd)return;const q=bSrch.value.trim().toLowerCase();const res=BR.filter(b=>(!activeNet||b.net===activeNet)&&(!q||b.n.toLowerCase().includes(q)||b.i.includes(q)||b.num.includes(q))).slice(0,60);dd.innerHTML=res.length?res.map(b=>`<div class="bopt" onclick="pickBr('${b.i}')"><div class="bn">${b.n}</div><div class="bm">${b.net} · מזהה: ${b.i}${b.num?' · סניף #'+b.num:''}</div></div>`).join(''):'<div class="bopt" style="color:#999">לא נמצאו</div>';dd.style.display='block';}
 function showBDD(){if(!selB)filterBr();}
-function pickBr(id){selB=BR.find(b=>b.i===id);document.getElementById('brDD').style.display='none';document.getElementById('bSrch').value='';document.getElementById('selBox').style.display='block';document.getElementById('selNm').textContent=selB.n;document.getElementById('selMt').textContent=selB.net+' · מזהה: '+selB.i+(selB.num?' · סניף #'+selB.num:'');}
-function clearBr(){selB=null;document.getElementById('selBox').style.display='none';document.getElementById('bSrch').value='';}
-document.addEventListener('click',e=>{if(!e.target.closest('.bwrap'))document.getElementById('brDD').style.display='none';});
+function pickBr(id){selB=BR.find(b=>b.i===id);const _dd=document.getElementById('brDD');if(_dd)_dd.style.display='none';const _bs=document.getElementById('bSrch');if(_bs)_bs.value='';const _sb=document.getElementById('selBox');if(_sb)_sb.style.display='block';document.getElementById('selNm').textContent=selB.n;document.getElementById('selMt').textContent=selB.net+' · מזהה: '+selB.i+(selB.num?' · סניף #'+selB.num:'');}
+function clearBr(){selB=null;const _sb=document.getElementById('selBox');if(_sb)_sb.style.display='none';const _bs=document.getElementById('bSrch');if(_bs)_bs.value='';}
+document.addEventListener('click',e=>{const _dd=document.getElementById('brDD');if(_dd&&!e.target.closest('.bwrap'))_dd.style.display='none';});
 function loginSaved(){try{const s=JSON.parse(localStorage.getItem(SK));if(!s)return;if(s.role==='admin'){const pass=prompt('סיסמא:');if(pass===null)return;if(pass!=='alparomeo'){alert('סיסמא שגויה');return;}}enterApp(s);}catch(e){}}
 
 async function doLogin(){
@@ -856,7 +856,7 @@ function enterApp(user){
   switchTab('Upload');loadActs();
 }
 
-function doLogout(){localStorage.removeItem(SK);CU=null;selB=null;imgData=null;selAct=null;repBr=null;document.getElementById('lEmail').value='';document.getElementById('selBox').style.display='none';document.getElementById('svBanner').style.display='none';document.getElementById('orDv').style.display='none';document.getElementById('mainScreen').classList.remove('active');document.getElementById('loginScreen').classList.add('active');}
+function doLogout(){localStorage.removeItem(SK);CU=null;selB=null;imgData=null;selAct=null;repBr=null;document.getElementById('lEmail').value='';['selBox','svBanner','orDv'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});document.getElementById('mainScreen').classList.remove('active');document.getElementById('loginScreen').classList.add('active');}
 
 function buildTabs(){const t=document.getElementById('atabs');t.innerHTML='';[{id:'Upload',l:'📋 דיווח'},{id:'Dash',l:'📊 דשבורד'},{id:'Missing',l:'🔴 חסרים',mgr:true},{id:'History',l:'📅 היסטוריה',mgr:true},{id:'Workers',l:'👥 עובדים',adm:true},{id:'Admin',l:'⚙️ ניהול',adm:true},/* ,{id:'AI',l:'🗂️ מרכז מידע'} ,{id:'Tickets',l:'📩 פניות'} */].filter(x=>(!x.adm||CU.role==='admin')&&(!x.mgr||['admin','area_manager'].includes(CU.role))).forEach(x=>{const b=document.createElement('button');b.className='atab';b.id='t'+x.id;b.textContent=x.l;b.onclick=()=>switchTab(x.id);t.appendChild(b);});}
 
