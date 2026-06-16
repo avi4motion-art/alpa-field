@@ -125,7 +125,7 @@ input,select,textarea,button{font-family:'Heebo',sans-serif}
 .btn-sub{width:100%;margin-top:1.2rem;background:var(--pink);color:#fff;border:none;border-radius:12px;padding:13px;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s}
 .btn-sub:hover{background:var(--pink-dark)}
 .btn-sub:disabled{opacity:.4;cursor:not-allowed}
-.toast{background:#e8f8ee;color:#1a7340;border-radius:10px;padding:11px 13px;font-size:13px;font-weight:500;margin-top:1rem;display:none}
+.toast{background:#e8f8ee;color:#1a7340;border-radius:10px;padding:12px 16px;font-size:14px;font-weight:600;margin-top:1rem;display:none;position:fixed;bottom:20px;right:20px;z-index:10000;box-shadow:0 4px 12px rgba(0,0,0,0.15);animation:slideIn 0.3s ease-out;max-width:300px}@keyframes slideIn{from{transform:translateX(400px);opacity:0}to{transform:translateX(0);opacity:1}}
 
 /* DASHBOARD */
 .dh{max-width:700px;margin:0 auto 14px}
@@ -895,7 +895,7 @@ function renderBrSel(){
 function pickRepBr(id){document.querySelectorAll('.br-opt').forEach(e=>e.classList.remove('picked'));document.getElementById('bo-'+id)?.classList.add('picked');repBr=BR.find(x=>x.i===id);}
 
 // ── IMAGE ──
-function handleImg(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{const img=new Image();img.onload=()=>{const c=document.createElement('canvas');const M=900;let w=img.width,h=img.height;if(w>M){h=Math.round(h*M/w);w=M;}if(h>M){w=Math.round(w*M/h);h=M;}c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);imgData=c.toDataURL('image/jpeg',.72);const pv=document.getElementById('pvImg');pv.src=imgData;pv.style.display='block';document.getElementById('pvDel').style.display='flex';};img.src=e.target.result;};r.readAsDataURL(f);}
+function handleImg(inp){const f=inp.files[0];if(!f)return;if(!confirm('בבקשה לוודא שהתמונה מצולמת בצורה מייטבית עם סחורה, שילוט ונראות מייטבית.\n\nהאם התמונה עומדת בדרישות?')){inp.value='';return;}const r=new FileReader();r.onload=e=>{const img=new Image();img.onload=()=>{const c=document.createElement('canvas');const M=900;let w=img.width,h=img.height;if(w>M){h=Math.round(h*M/w);w=M;}if(h>M){w=Math.round(w*M/h);h=M;}c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);imgData=c.toDataURL('image/jpeg',.72);const pv=document.getElementById('pvImg');pv.src=imgData;pv.style.display='block';document.getElementById('pvDel').style.display='flex';};img.src=e.target.result;};r.readAsDataURL(f);}
 function clearImg(){imgData=null;document.getElementById('pvImg').style.display='none';document.getElementById('pvDel').style.display='none';document.getElementById('fCam').value='';document.getElementById('fGal').value='';}
 
 // ── SUBMIT ──
@@ -1617,7 +1617,7 @@ let deferredPrompt=null;
 window.addEventListener('beforeinstallprompt',(e)=>{e.preventDefault();deferredPrompt=e;document.getElementById('installBanner').style.display='flex';});
 function installApp(){if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(()=>{deferredPrompt=null;document.getElementById('installBanner').style.display='none';});}}
 window.addEventListener('appinstalled',()=>{document.getElementById('installBanner').style.display='none';});
-if('serviceWorker'in navigator){const swCode="const CACHE='alpa-v1';self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/']))));self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));";const blob=new Blob([swCode],{type:'application/javascript'});navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(()=>{});}
+if('serviceWorker'in navigator){const swCode="const CACHE='alpa-v2';self.addEventListener('install',e=>{self.skipWaiting();});self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});self.addEventListener('fetch',e=>{e.respondWith(fetch(e.request).then(r=>{const copy=r.clone();caches.open(CACHE).then(c=>c.put(e.request,copy));return r;}).catch(()=>caches.match(e.request)));});";const blob=new Blob([swCode],{type:'application/javascript'});navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(()=>{});}
 
 // ===== TARGETS =====
 var targetLinks={};
