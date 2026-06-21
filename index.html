@@ -378,6 +378,7 @@ input,select,textarea,button{font-family:'Heebo',sans-serif}
           <div class="sc"><div class="sn" id="hstWorkers">0</div><div class="sl">עובדים</div></div>
         </div>
         <button class="btn-a" onclick="exportHistExcel()" style="width:100%;margin-bottom:1rem;background:var(--pink);color:#fff;border-color:var(--pink)">📥 ייצוא לאקסל</button>
+        <button class="btn-a" id="dlImagesBtn" onclick="downloadHistImages()" style="display:none;width:100%;margin-bottom:1rem;background:#fff;color:var(--pink);border-color:var(--pink)">🖼️ הורד תמונות (ZIP)</button>
         <div id="histList"></div>
       </div>
     </div>
@@ -1089,6 +1090,7 @@ async function loadHistory(){
 function renderHistory(){
   const actFilter=document.getElementById('histAct').value;
   let f=actFilter?histReports.filter(r=>r.activityName===actFilter):histReports;
+  const dlBtn=document.getElementById('dlImagesBtn');if(dlBtn)dlBtn.style.display=(CU&&CU.role==='admin'&&f.some(r=>r.img))?'block':'none';
   document.getElementById('hstTotal').textContent=f.length;
   document.getElementById('hstBranches').textContent=new Set(f.map(r=>r.branchName)).size;
   document.getElementById('hstWorkers').textContent=new Set(f.map(r=>r.workerName)).size;
@@ -1133,6 +1135,42 @@ function exportHistExcel(){
   const subj=encodeURIComponent('ALPA שטח — היסטוריה '+month);
   const body=encodeURIComponent('שלום,\n\nמצורף דוח היסטוריה\nחודש: '+month+'\nדיווחים: '+f.length+'\n\nקישור: https://alpa-filed.netlify.app');
   showExportToast(f.length,0,'mailto:avia@alpa-cosmetics.co.il?subject='+subj+'&body='+body);
+}
+
+function loadJSZip(){return new Promise((res,rej)=>{if(window.JSZip)return res();const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';s.onload=()=>res();s.onerror=()=>rej(new Error('load failed'));document.head.appendChild(s);});}
+
+function sanitizeName(s){return String(s||'').replace(/["'\\/:*?<>|]/g,'').replace(/\s+/g,' ').trim().slice(0,80);}
+
+async function downloadHistImages(){
+  if(!CU||CU.role!=='admin'){alert('פעולה זו זמינה למנהלים בלבד');return;}
+  const actFilter=document.getElementById('histAct').value;
+  const month=document.getElementById('histMonth').value;
+  let f=actFilter?histReports.filter(r=>r.activityName===actFilter):histReports;
+  f=f.filter(r=>r.img);
+  if(!f.length){alert('אין תמונות להורדה');return;}
+  const btn=document.getElementById('dlImagesBtn');const orig=btn?btn.textContent:'';
+  if(btn){btn.disabled=true;btn.textContent='⏳ מכין קובץ ZIP...';}
+  try{
+    await loadJSZip();
+    const zip=new JSZip();
+    const used={};
+    f.forEach(r=>{
+      const m=/^data:(image\/[a-zA-Z+]+);base64,(.*)$/.exec(r.img||'');
+      if(!m)return;
+      const ext=(m[1].split('/')[1]||'jpg').replace('jpeg','jpg');
+      const data=m[2];
+      let base=sanitizeName(r.branchName||'סניף');
+      if(r.branchNum)base+=' ('+r.branchNum+')';
+      let name=base;let n=1;
+      while(used[name+'.'+ext]){n++;name=base+'_'+n;}
+      used[name+'.'+ext]=true;
+      zip.file(name+'.'+ext,data,{base64:true});
+    });
+    const blob=await zip.generateAsync({type:'blob'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download='ALPA_תמונות_'+(actFilter?sanitizeName(actFilter)+'_':'')+month+'.zip';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+  }catch(e){alert('שגיאה בהכנת הקובץ: '+(e&&e.message?e.message:e));}
+  finally{if(btn){btn.disabled=false;btn.textContent=orig;}}
 }
 
 // ── WORKERS ──
