@@ -3,6 +3,7 @@
 
 
 
+
 <!DOCTYPE html>
 <!-- v22 -->
 <html lang="he" dir="rtl"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -110,6 +111,7 @@ input,select,textarea,button{font-family:'Heebo',sans-serif}
 .br-opt.picked{border-color:var(--pink);background:rgba(233,30,140,.05)}
 .bo-empty{padding:14px;text-align:center;color:var(--gray3,#888);font-size:14px;background:#fafafa;border-radius:8px}
 .bo-nm{font-size:13px;font-weight:500}
+.bo-done{font-size:11px;color:#2e7d32;font-weight:500;margin-right:2px}
 .bo-id{font-size:11px;color:var(--gray3)}
 
 /* IMAGE */
@@ -814,7 +816,7 @@ const BR=[{"i": "1052075","n": "ס\"פ גלובוס אשקלון (269)","net": "
 const NETS=[...new Set(BR.map(b=>b.net))];
 const SK='alpa_v4';
 const toDay=()=>new Date().toISOString().split('T')[0];
-let CU=null,selB=null,activeNet='',reports=[],acts=[],selAct=null,imgData=null,pickedIco='🎤',editId=null,mNet='',csvIds=new Set(),repBr=null;
+let CU=null,selB=null,activeNet='',reports=[],acts=[],selAct=null,imgData=null,pickedIco='🎤',editId=null,mNet='',csvIds=new Set(),repBr=null,reportedPairs=new Set();
 
 // ── LOGIN INIT ──
 
@@ -891,8 +893,9 @@ function renderBrSel(){
   const mb=myBranches().filter(b=>!selAct.branchIds?.length||selAct.branchIds.includes(b.i));
   document.getElementById('brSel').style.display='block';
   if(mb.length===0){repBr=null;document.getElementById('brGrid').innerHTML=`<div class="bo-empty">אין סניפים משויכים אליך בפעילות זו</div>`;return;}
-  if(mb.length===1){repBr=mb[0];document.getElementById('brGrid').innerHTML=`<div class="br-opt picked" id="bo-${mb[0].i}"><div><div class="bo-nm">${mb[0].n}</div><div class="bo-id">${mb[0].net} · מזהה: ${mb[0].i}${mb[0].num?' · #'+mb[0].num:''}</div></div></div>`;return;}
-  document.getElementById('brGrid').innerHTML=mb.map(b=>`<div class="br-opt" id="bo-${b.i}" onclick="pickRepBr('${b.i}')"><div><div class="bo-nm">${b.n}</div><div class="bo-id">${b.net} · מזהה: ${b.i}${b.num?' · #'+b.num:''}</div></div></div>`).join('');
+  const isDone=(b)=>reportedPairs.has(selAct.id+'|'+b.i);
+  if(mb.length===1){repBr=mb[0];document.getElementById('brGrid').innerHTML=`<div class="br-opt picked" id="bo-${mb[0].i}"><div><div class="bo-nm">${mb[0].n}${isDone(mb[0])?'<span class="bo-done"> ✅ דווח</span>':''}</div><div class="bo-id">${mb[0].net} · מזהה: ${mb[0].i}${mb[0].num?' · #'+mb[0].num:''}</div></div></div>`;return;}
+  document.getElementById('brGrid').innerHTML=mb.map(b=>`<div class="br-opt" id="bo-${b.i}" onclick="pickRepBr('${b.i}')"><div><div class="bo-nm">${b.n}${isDone(b)?'<span class="bo-done"> ✅ דווח</span>':''}</div><div class="bo-id">${b.net} · מזהה: ${b.i}${b.num?' · #'+b.num:''}</div></div></div>`).join('');
 }
 
 function pickRepBr(id){document.querySelectorAll('.br-opt').forEach(e=>e.classList.remove('picked'));document.getElementById('bo-'+id)?.classList.add('picked');repBr=BR.find(x=>x.i===id);}
@@ -912,7 +915,9 @@ async function submitRpt(){
   const br=repBr||mb[0];
   try{
     await window.FB.addDoc(window.FB.collection(window.DB,'reports'),{activityId:selAct.id,activityName:selAct.name,activityIcon:selAct.icon||'📋',workerEmail:CU.email,workerName:CU.name,workerRole:CU.role,branchId:br.i,branchName:br.n,branchNum:br.num||'',network:br.net,note:document.getElementById('noteInp').value.trim(),img:imgData,date:new Date().toLocaleDateString('he-IL'),time:new Date().toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}),ts:Date.now()});
-    document.getElementById('noteInp').value='';clearImg();selAct=null;repBr=null;
+    document.getElementById('noteInp').value='';clearImg();
+    reportedPairs.add(selAct.id+'|'+br.i);
+    selAct=null;repBr=null;
     document.querySelectorAll('.act-item').forEach(e=>{e.classList.remove('sel');e.querySelector('.ai-ck').textContent='';}); 
     document.getElementById('upForm').style.display='none';document.getElementById('brSel').style.display='none';
     const t=document.getElementById('toast');t.style.display='block';setTimeout(()=>t.style.display='none',3500);
