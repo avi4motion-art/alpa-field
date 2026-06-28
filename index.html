@@ -879,11 +879,12 @@ function renderActUser(){
   c.innerHTML='<div class="f-lbl" style="margin-top:.8rem">בחר פעילות</div><div class="act-list">'+myActs.map(a=>`<div class="act-item" id="ai-${a.id}" onclick="pickAct('${a.id}')"><div class="ai-ico">${a.icon||'📋'}</div><div class="ai-inf"><div class="ai-nm">${a.name}</div><div class="ai-net">${a.network||'כל הרשתות'}</div><div class="ai-dt">${fmtD(a.startDate)} — ${fmtD(a.endDate)}</div></div><div class="ai-ck"></div></div>`).join('')+'</div>';
 }
 
-function pickAct(id){
+async function pickAct(id){
   selAct=acts.find(a=>a.id===id);repBr=null;
   document.querySelectorAll('.act-item').forEach(e=>{e.classList.remove('sel');e.querySelector('.ai-ck').textContent='';}); 
   document.getElementById('ai-'+id)?.classList.add('sel');
   document.getElementById('ai-'+id).querySelector('.ai-ck').textContent='✓';
+  if(window.DB){try{const snap=await window.FB.getDocs(window.FB.query(window.FB.collection(window.DB,'reports'),window.FB.orderBy('ts','desc')));snap.docs.forEach(d=>{const r=d.data();if(r.activityId===id&&r.workerEmail===CU.email)reportedPairs.add(id+'|'+r.branchId);});}catch(e){console.warn('reportedPairs load failed',e);}}
   renderBrSel();
   document.getElementById('upForm').style.display='block';
   document.getElementById('upForm').scrollIntoView({behavior:'smooth',block:'nearest'});
