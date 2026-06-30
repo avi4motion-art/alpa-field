@@ -1138,6 +1138,7 @@ function renderHistory(){
       out+='<div class="rc-br">'+(r.branchName||'—')+(r.branchNum?' (#'+r.branchNum+')':'')+'</div>';
       out+='<div class="rc-mt">'+r.workerName+' · '+r.time+(r.network?' · '+r.network:'')+'</div>';
       if(r.note) out+='<div class="rc-nt">'+r.note+'</div>';
+      if(CU&&(CU.role==='admin'||r.workerEmail===CU.email)) out+='<button class="rc-del" onclick="deleteHistRpt(\''+r.id+'\',event)">🗑️ מחק</button>';
       out+='</div></div>';
     });
     out+='</div>';
@@ -1419,6 +1420,17 @@ async function deleteRpt(id, e){
     await deleteDoc(window.FB.doc(window.DB,'reports',id));
     reports=reports.filter(r=>r.id!==id);
     renderDash();
+  }catch(err){alert('שגיאה: '+err.message);}
+}
+
+async function deleteHistRpt(id, e){
+  e.stopPropagation();
+  if(!confirm('למחוק את הדיווח לצמיתות?')) return;
+  try{
+    const {deleteDoc}=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    await deleteDoc(window.FB.doc(window.DB,'reports',id));
+    histReports=histReports.filter(r=>r.id!==id);
+    renderHistory();
   }catch(err){alert('שגיאה: '+err.message);}
 }
 function fmtD(d){if(!d)return'—';const[y,m,day]=d.split('-');return day+'.'+m+'.'+y;}
