@@ -93,6 +93,8 @@ input,select,textarea,button{font-family:'Heebo',sans-serif}
 .act-item{border:1.5px solid var(--gray2);border-radius:12px;padding:11px 13px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:11px}
 .act-item:hover{border-color:var(--pink);background:rgba(233,30,140,.03)}
 .act-item.sel{border-color:var(--pink);background:rgba(233,30,140,.06)}
+.act-item.act-done{border-color:#86efac;background:rgba(34,197,94,.06)}
+.act-item.act-done:hover{border-color:#22c55e;background:rgba(34,197,94,.08)}
 .ai-ico{font-size:20px;flex-shrink:0}
 .ai-inf{flex:1;min-width:0}
 .ai-nm{font-size:14px;font-weight:600}
@@ -867,16 +869,35 @@ function buildTabs(){const t=document.getElementById('atabs');t.innerHTML='';[{i
 function switchTab(id){document.querySelectorAll('.atab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.getElementById('t'+id)?.classList.add('active');document.getElementById('panel'+id)?.classList.add('active');if(id==='Dash')loadRpts();if(id==='Admin'){loadActAdmin();initPasswords();}if(id==='Missing')initMissing();if(id==='Workers')initWorkers();if(id==='History')initHistory();if(id==='AI')initAI();if(id==='Tickets')initTickets();}
 
 // ── ACTIVITIES ──
-async function loadActs(){if(!window.DB)return window.addEventListener('fb-ready',loadActs,{once:true});try{const snap=await window.FB.getDocs(window.FB.collection(window.DB,'activities'));acts=snap.docs.map(d=>(({id:d.id,...d.data()})));renderActUser();}catch(e){console.error(e);}}
+async function loadActs(){if(!window.DB)return window.addEventListener('fb-ready',loadActs,{once:true});try{const snap=await window.FB.getDocs(window.FB.collection(window.DB,'activities'));acts=snap.docs.map(d=>(({id:d.id,...d.data()})));acts.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));renderActUser();}catch(e){console.error(e);}}
 
 function myBranches(){if(CU.role==='admin')return BR;if(CU.role==='area_manager')return BR.filter(b=>b.m===CU.email);return BR.filter(b=>[b.m,b.a,b.s].includes(CU.email));}
 
-function renderActUser(){
+async function renderActUser(){
   const now=toDay();const myIds=new Set(myBranches().map(b=>b.i));
   const myActs=acts.filter(a=>{if(a.status==='closed')return false;if(a.endDate&&a.endDate<now)return false;if(a.startDate&&a.startDate>now)return false;if(!a.branchIds?.length)return true;return a.branchIds.some(id=>myIds.has(id));});
   const c=document.getElementById('actArea');
   if(!myActs.length){c.innerHTML='<div class="no-act">🎉<br>אין פעילויות פתוחות כרגע</div>';document.getElementById('upForm').style.display='none';return;}
-  c.innerHTML='<div class="f-lbl" style="margin-top:.8rem">בחר פעילות</div><div class="act-list">'+myActs.map(a=>`<div class="act-item" id="ai-${a.id}" onclick="pickAct('${a.id}')"><div class="ai-ico">${a.icon||'📋'}</div><div class="ai-inf"><div class="ai-nm">${a.name}</div><div class="ai-net">${a.network||'כל הרשתות'}</div><div class="ai-dt">${fmtD(a.startDate)} — ${fmtD(a.endDate)}</div></div><div class="ai-ck"></div></div>`).join('')+'</div>';
+  // בדוק אילו פעילויות הושלמו במלואן עבור המשתמש הנוכחי
+  let doneActIds=new Set();
+  if(window.DB){
+    try{
+      const rSnap=await window.FB.getDocs(window.FB.collection(window.DB,'reports'));
+      const myReports=rSnap.docs.map(d=>d.data()).filter(r=>CU.role==='admin'||r.workerEmail===CU.email);
+      const reportedByAct={};
+      myReports.forEach(r=>{if(!reportedByAct[r.activityId])reportedByAct[r.activityId]=new Set();reportedByAct[r.activityId].add(r.branchId);});
+      myActs.forEach(a=>{
+        const relevantBranches=(a.branchIds&&a.branchIds.length)?a.branchIds.filter(id=>myIds.has(id)):[...myIds];
+        if(relevantBranches.length&&reportedByAct[a.id]&&relevantBranches.every(id=>reportedByAct[a.id].has(id))){
+          doneActIds.add(a.id);
+        }
+      });
+    }catch(e){console.warn('completion check failed',e);}
+  }
+  c.innerHTML='<div class="f-lbl" style="margin-top:.8rem">בחר פעילות</div><div class="act-list">'+myActs.map(a=>{
+    const isDone=doneActIds.has(a.id);
+    return `<div class="act-item${isDone?' act-done':''}" id="ai-${a.id}" onclick="pickAct('${a.id}')"><div class="ai-ico">${a.icon||'📋'}</div><div class="ai-inf"><div class="ai-nm">${a.name}${isDone?' <span style="color:#2e7d32;font-size:12px;font-weight:600">✅ הושלם</span>':''}</div><div class="ai-net">${a.network||'כל הרשתות'}</div><div class="ai-dt">${fmtD(a.startDate)} — ${fmtD(a.endDate)}</div></div><div class="ai-ck"></div></div>`;
+  }).join('')+'</div>';
 }
 
 async function pickAct(id){
