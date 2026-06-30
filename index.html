@@ -883,7 +883,7 @@ async function renderActUser(){
   if(window.DB){
     try{
       const rSnap=await window.FB.getDocs(window.FB.collection(window.DB,'reports'));
-      const myReports=rSnap.docs.map(d=>d.data()).filter(r=>CU.role==='admin'||r.workerEmail===CU.email);
+      const myReports=rSnap.docs.map(d=>d.data());
       const reportedByAct={};
       myReports.forEach(r=>{if(!reportedByAct[r.activityId])reportedByAct[r.activityId]=new Set();reportedByAct[r.activityId].add(r.branchId);});
       myActs.forEach(a=>{
@@ -905,7 +905,7 @@ async function pickAct(id){
   document.querySelectorAll('.act-item').forEach(e=>{e.classList.remove('sel');e.querySelector('.ai-ck').textContent='';}); 
   document.getElementById('ai-'+id)?.classList.add('sel');
   document.getElementById('ai-'+id).querySelector('.ai-ck').textContent='✓';
-  if(window.DB){try{const snap=await window.FB.getDocs(window.FB.query(window.FB.collection(window.DB,'reports'),window.FB.orderBy('ts','desc')));snap.docs.forEach(d=>{const r=d.data();if(r.activityId===id&&(CU.role==='admin'||r.workerEmail===CU.email))reportedPairs.add(id+'|'+r.branchId);});}catch(e){console.warn('reportedPairs load failed',e);}}
+  if(window.DB){try{const snap=await window.FB.getDocs(window.FB.query(window.FB.collection(window.DB,'reports'),window.FB.orderBy('ts','desc')));snap.docs.forEach(d=>{const r=d.data();if(r.activityId===id)reportedPairs.add(id+'|'+r.branchId);});}catch(e){console.warn('reportedPairs load failed',e);}}
   renderBrSel();
   document.getElementById('upForm').style.display='block';
   document.getElementById('upForm').scrollIntoView({behavior:'smooth',block:'nearest'});
