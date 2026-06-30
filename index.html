@@ -265,20 +265,7 @@ input,select,textarea,button{font-family:'Heebo',sans-serif}
           <h4>📍 בחר סניף לדיווח</h4>
           <div class="br-grid" id="brGrid"></div>
         </div>
-        <div class="img-btns">
-          <div class="img-btn">
-            <input type="file" id="fCam" accept="image/*" capture="environment" onchange="handleImg(this)">
-            <span class="ico">📷</span><div class="lbl">מצלמה</div><div class="sub">צלם עכשיו</div>
-          </div>
-          <div class="img-btn">
-            <input type="file" id="fGal" accept="image/*" onchange="handleImg(this)">
-            <span class="ico">🖼️</span><div class="lbl">גלריה</div><div class="sub">וואטסאפ / קיימת</div>
-          </div>
-        </div>
-        <div class="pv-wrap">
-          <img id="pvImg" class="pv-img">
-          <button class="pv-del" id="pvDel" onclick="clearImg()">✕</button>
-        </div>
+        <div id="imgSlots"></div>
         <div class="f-lbl">הערה (אופציונלי)</div>
         <textarea class="f-in f-ta" id="noteInp" placeholder="תיאור קצר..."></textarea>
         <button class="btn-sub" id="subBtn" onclick="submitRpt()">שלח דיווח</button>
@@ -575,6 +562,9 @@ input,select,textarea,button{font-family:'Heebo',sans-serif}
       <div><div class="f-lbl">תאריך התחלה</div><input class="f-in" type="date" id="actSt"></div>
       <div><div class="f-lbl">תאריך סיום</div><input class="f-in" type="date" id="actEn"></div>
     </div>
+    <div class="f-lbl" style="margin-top:1.2rem">אלמנטים לצילום (אופציונלי)</div>
+    <input class="f-in" id="actElements" placeholder="לדוגמה: פודיום, מסך פרסום (הפרד בפסיקים)">
+    <div style="font-size:11px;color:var(--gray3);margin-top:4px">אם תמלא כאן יותר מאלמנט אחד, העובד יידרש לצלם תמונה נפרדת לכל אלמנט בכל דיווח</div>
     <div class="f-lbl" style="margin-top:1.2rem">סניפים</div>
     <div class="csv-zone">
       <input type="file" accept=".csv,.xlsx,.xls,.txt" onchange="handleCSV(this)">
@@ -818,7 +808,7 @@ const BR=[{"i": "1052075","n": "ס\"פ גלובוס אשקלון (269)","net": "
 const NETS=[...new Set(BR.map(b=>b.net))];
 const SK='alpa_v4';
 const toDay=()=>new Date().toISOString().split('T')[0];
-let CU=null,selB=null,activeNet='',reports=[],acts=[],selAct=null,imgData=null,pickedIco='🎤',editId=null,mNet='',csvIds=new Set(),repBr=null,reportedPairs=new Set();
+let CU=null,selB=null,activeNet='',reports=[],acts=[],selAct=null,imgData=null,imgDataMulti={},pickedIco='🎤',editId=null,mNet='',csvIds=new Set(),repBr=null,reportedPairs=new Set();
 
 // ── LOGIN INIT ──
 
@@ -862,7 +852,7 @@ function enterApp(user){
   switchTab('Upload');loadActs();
 }
 
-function doLogout(){localStorage.removeItem(SK);CU=null;selB=null;imgData=null;selAct=null;repBr=null;document.getElementById('lEmail').value='';['selBox','svBanner','orDv'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});document.getElementById('mainScreen').classList.remove('active');document.getElementById('loginScreen').classList.add('active');}
+function doLogout(){localStorage.removeItem(SK);CU=null;selB=null;imgData=null;imgDataMulti={};selAct=null;repBr=null;document.getElementById('lEmail').value='';['selBox','svBanner','orDv'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});document.getElementById('mainScreen').classList.remove('active');document.getElementById('loginScreen').classList.add('active');}
 
 function buildTabs(){const t=document.getElementById('atabs');t.innerHTML='';[{id:'Upload',l:'📋 דיווח'},{id:'Dash',l:'📊 דשבורד'},{id:'Missing',l:'🔴 חסרים',mgr:true},{id:'History',l:'📅 היסטוריה',mgr:true},{id:'Workers',l:'👥 עובדים',adm:true},{id:'Admin',l:'⚙️ ניהול',adm:true},/* ,{id:'AI',l:'🗂️ מרכז מידע'} ,{id:'Tickets',l:'📩 פניות'} */].filter(x=>(!x.adm||CU.role==='admin')&&(!x.mgr||['admin','area_manager'].includes(CU.role))).forEach(x=>{const b=document.createElement('button');b.className='atab';b.id='t'+x.id;b.textContent=x.l;b.onclick=()=>switchTab(x.id);t.appendChild(b);});}
 
@@ -901,12 +891,13 @@ async function renderActUser(){
 }
 
 async function pickAct(id){
-  selAct=acts.find(a=>a.id===id);repBr=null;
+  selAct=acts.find(a=>a.id===id);repBr=null;imgDataMulti={};
   document.querySelectorAll('.act-item').forEach(e=>{e.classList.remove('sel');e.querySelector('.ai-ck').textContent='';}); 
   document.getElementById('ai-'+id)?.classList.add('sel');
   document.getElementById('ai-'+id).querySelector('.ai-ck').textContent='✓';
   if(window.DB){try{const snap=await window.FB.getDocs(window.FB.query(window.FB.collection(window.DB,'reports'),window.FB.orderBy('ts','desc')));snap.docs.forEach(d=>{const r=d.data();if(r.activityId===id)reportedPairs.add(id+'|'+r.branchId);});}catch(e){console.warn('reportedPairs load failed',e);}}
   renderBrSel();
+  renderImgSlots();
   document.getElementById('upForm').style.display='block';
   document.getElementById('upForm').scrollIntoView({behavior:'smooth',block:'nearest'});
 }
@@ -922,22 +913,75 @@ function renderBrSel(){
 
 function pickRepBr(id){document.querySelectorAll('.br-opt').forEach(e=>e.classList.remove('picked'));document.getElementById('bo-'+id)?.classList.add('picked');repBr=BR.find(x=>x.i===id);}
 
-// ── IMAGE ──
-function handleImg(inp){const f=inp.files[0];if(!f)return;if(!confirm('בבקשה לוודא שהתמונה מצולמת בצורה מייטבית עם סחורה, שילוט ונראות מייטבית.\n\nהאם התמונה עומדת בדרישות?')){inp.value='';return;}const r=new FileReader();r.onload=e=>{const img=new Image();img.onload=()=>{const c=document.createElement('canvas');const M=900;let w=img.width,h=img.height;if(w>M){h=Math.round(h*M/w);w=M;}if(h>M){w=Math.round(w*M/h);h=M;}c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);imgData=c.toDataURL('image/jpeg',.72);const pv=document.getElementById('pvImg');pv.src=imgData;pv.style.display='block';document.getElementById('pvDel').style.display='flex';};img.src=e.target.result;};r.readAsDataURL(f);}
-function clearImg(){imgData=null;document.getElementById('pvImg').style.display='none';document.getElementById('pvDel').style.display='none';document.getElementById('fCam').value='';document.getElementById('fGal').value='';}
+// ── IMAGE SLOTS (supports single-image or multi-element activities) ──
+function getActElements(){return(selAct&&selAct.elements&&selAct.elements.length)?selAct.elements:null;}
+
+function renderImgSlots(){
+  const els=getActElements();
+  const c=document.getElementById('imgSlots');
+  if(!els){
+    c.innerHTML=`
+      <div class="img-btns">
+        <div class="img-btn">
+          <input type="file" id="fCam-main" accept="image/*" capture="environment" onchange="handleImg(this,'__main__')">
+          <span class="ico">📷</span><div class="lbl">מצלמה</div><div class="sub">צלם עכשיו</div>
+        </div>
+        <div class="img-btn">
+          <input type="file" id="fGal-main" accept="image/*" onchange="handleImg(this,'__main__')">
+          <span class="ico">🖼️</span><div class="lbl">גלריה</div><div class="sub">וואטסאפ / קיימת</div>
+        </div>
+      </div>
+      <div class="pv-wrap">
+        <img id="pvImg-main" class="pv-img">
+        <button class="pv-del" id="pvDel-main" onclick="clearImg('__main__')">✕</button>
+      </div>`;
+    return;
+  }
+  c.innerHTML=els.map((el,i)=>`
+    <div class="f-lbl" style="margin-top:${i===0?'.8rem':'1.2rem'}">📸 ${el}</div>
+    <div class="img-btns">
+      <div class="img-btn">
+        <input type="file" id="fCam-${i}" accept="image/*" capture="environment" onchange="handleImg(this,'${i}')">
+        <span class="ico">📷</span><div class="lbl">מצלמה</div><div class="sub">צלם עכשיו</div>
+      </div>
+      <div class="img-btn">
+        <input type="file" id="fGal-${i}" accept="image/*" onchange="handleImg(this,'${i}')">
+        <span class="ico">🖼️</span><div class="lbl">גלריה</div><div class="sub">וואטסאפ / קיימת</div>
+      </div>
+    </div>
+    <div class="pv-wrap">
+      <img id="pvImg-${i}" class="pv-img">
+      <button class="pv-del" id="pvDel-${i}" onclick="clearImg('${i}')">✕</button>
+    </div>`).join('');
+}
+
+function handleImg(inp,key){const f=inp.files[0];if(!f)return;if(!confirm('בבקשה לוודא שהתמונה מצולמת בצורה מייטבית עם סחורה, שילוט ונראות מייטבית.\n\nהאם התמונה עומדת בדרישות?')){inp.value='';return;}const r=new FileReader();r.onload=e=>{const img=new Image();img.onload=()=>{const c=document.createElement('canvas');const M=900;let w=img.width,h=img.height;if(w>M){h=Math.round(h*M/w);w=M;}if(h>M){w=Math.round(w*M/h);h=M;}c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);imgDataMulti[key]=c.toDataURL('image/jpeg',.72);const pv=document.getElementById('pvImg-'+key);pv.src=imgDataMulti[key];pv.style.display='block';document.getElementById('pvDel-'+key).style.display='flex';};img.src=e.target.result;};r.readAsDataURL(f);}
+function clearImg(key){delete imgDataMulti[key];const pv=document.getElementById('pvImg-'+key);if(pv){pv.style.display='none';pv.src='';}const del=document.getElementById('pvDel-'+key);if(del)del.style.display='none';const cam=document.getElementById('fCam-'+key);if(cam)cam.value='';const gal=document.getElementById('fGal-'+key);if(gal)gal.value='';}
 
 // ── SUBMIT ──
 async function submitRpt(){
   if(!selAct){alert('נא לבחור פעילות');return;}
   const mb=myBranches().filter(b=>!selAct.branchIds?.length||selAct.branchIds.includes(b.i));
   if(mb.length>1&&!repBr){alert('נא לבחור סניף');return;}
-  if(!imgData){alert('נא לצרף תמונה');return;}
+  const els=getActElements();
+  if(!els){
+    if(!imgDataMulti['__main__']){alert('נא לצרף תמונה');return;}
+  }else{
+    const missing=els.filter((el,i)=>!imgDataMulti[String(i)]);
+    if(missing.length){alert('נא לצרף תמונה עבור: '+missing.join(', '));return;}
+  }
   if(!window.DB){alert('Firebase לא מוכן');return;}
   const btn=document.getElementById('subBtn');btn.disabled=true;btn.textContent='שולח...';
   const br=repBr||mb[0];
   try{
-    await window.FB.addDoc(window.FB.collection(window.DB,'reports'),{activityId:selAct.id,activityName:selAct.name,activityIcon:selAct.icon||'📋',workerEmail:CU.email,workerName:CU.name,workerRole:CU.role,branchId:br.i,branchName:br.n,branchNum:br.num||'',network:br.net,note:document.getElementById('noteInp').value.trim(),img:imgData,date:new Date().toLocaleDateString('he-IL'),time:new Date().toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}),ts:Date.now()});
-    document.getElementById('noteInp').value='';clearImg();
+    const baseData={activityId:selAct.id,activityName:selAct.name,activityIcon:selAct.icon||'📋',workerEmail:CU.email,workerName:CU.name,workerRole:CU.role,branchId:br.i,branchName:br.n,branchNum:br.num||'',network:br.net,note:document.getElementById('noteInp').value.trim(),date:new Date().toLocaleDateString('he-IL'),time:new Date().toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}),ts:Date.now()};
+    if(!els){
+      await window.FB.addDoc(window.FB.collection(window.DB,'reports'),Object.assign({},baseData,{img:imgDataMulti['__main__']}));
+    }else{
+      const images=els.map((el,i)=>({label:el,img:imgDataMulti[String(i)]}));
+      await window.FB.addDoc(window.FB.collection(window.DB,'reports'),Object.assign({},baseData,{img:images[0].img,images:images}));
+    }
+    document.getElementById('noteInp').value='';imgDataMulti={};renderImgSlots();
     reportedPairs.add(selAct.id+'|'+br.i);
     selAct=null;repBr=null;
     document.querySelectorAll('.act-item').forEach(e=>{e.classList.remove('sel');e.querySelector('.ai-ck').textContent='';}); 
@@ -974,7 +1018,7 @@ function renderDash(){
   const l=document.getElementById('rlist');
   if(!f.length){l.innerHTML='<div class="empty-d">📭<br>אין דיווחים להצגה</div>';return;}
   renderActProgress();
-  l.innerHTML=f.map(r=>`<div class="rc"><img class="rc-img" src="${r.img}" loading="lazy" onclick="openLB(this.src,this.dataset.info)" data-info="${(r.branchName||'').replace(/"/g,'')+ ' · ' +(r.activityName||'').replace(/"/g,'')+ ' · ' +(r.date||'')}" style="cursor:pointer"/><div class="rc-info"><div class="rc-act">${r.activityIcon||'📋'} ${r.activityName||'—'}</div><div class="rc-br">${r.branchName||'—'}${r.branchNum?' (#'+r.branchNum+')':''}</div><div class="rc-mt">${r.workerName} · ${r.date} ${r.time}${r.network?' · '+r.network:''}</div>${r.note?`<div class="rc-nt">${r.note}</div>`:''} ${r.workerEmail===CU.email||CU.role==='admin'?`<button class="rc-del" onclick="deleteRpt('${r.id}',event)">🗑️ מחק</button>`:''}</div></div>`).join('');
+  l.innerHTML=f.map(r=>`<div class="rc">${rcImgHtml(r)}<div class="rc-info"><div class="rc-act">${r.activityIcon||'📋'} ${r.activityName||'—'}</div><div class="rc-br">${r.branchName||'—'}${r.branchNum?' (#'+r.branchNum+')':''}</div><div class="rc-mt">${r.workerName} · ${r.date} ${r.time}${r.network?' · '+r.network:''}</div>${r.note?`<div class="rc-nt">${r.note}</div>`:''} ${r.workerEmail===CU.email||CU.role==='admin'?`<button class="rc-del" onclick="deleteRpt('${r.id}',event)">🗑️ מחק</button>`:''}</div></div>`).join('');
 }
 
 // ── ADMIN ──
@@ -999,11 +1043,13 @@ function openModal(mode,id=null){
     const a=acts.find(x=>x.id===id);
     document.getElementById('mTtl').textContent='עריכת פעילות';document.getElementById('mSub').textContent='עדכן פרטים וסניפים';document.getElementById('saveBtn').textContent='שמור שינויים';
     document.getElementById('actNm').value=a.name||'';document.getElementById('actSt').value=a.startDate||'';document.getElementById('actEn').value=a.endDate||'';
+    document.getElementById('actElements').value=(a.elements&&a.elements.length)?a.elements.join(', '):'';
     pickedIco=a.icon||'🎤';document.querySelectorAll('.ico-o').forEach(e=>{e.classList.remove('on');if(e.dataset.i===pickedIco)e.classList.add('on');});
     if(a.branchIds?.length)a.branchIds.forEach(id=>csvIds.add(id));
   }else{
     document.getElementById('mTtl').textContent='פעילות חדשה';document.getElementById('mSub').textContent='הגדר פרטים ובחר סניפים';document.getElementById('saveBtn').textContent='צור פעילות';
     document.getElementById('actNm').value='';document.getElementById('actSt').value=toDay();document.getElementById('actEn').value='';
+    document.getElementById('actElements').value='';
     pickedIco='🎤';document.querySelectorAll('.ico-o').forEach((e,i)=>{e.classList.remove('on');if(i===0)e.classList.add('on');});
   }
   renderBC('');document.getElementById('modal').classList.add('open');
@@ -1075,10 +1121,12 @@ async function saveAct(){
   const name=document.getElementById('actNm').value.trim();
   const start=document.getElementById('actSt').value;
   const end=document.getElementById('actEn').value;
+  const elementsRaw=document.getElementById('actElements').value.trim();
+  const elements=elementsRaw?elementsRaw.split(',').map(s=>s.trim()).filter(Boolean):[];
   if(!name){alert('נא להזין שם פעילות');return;}
   if(!start){alert('נא לבחור תאריך התחלה');return;}
   if(!window.DB){alert('Firebase לא מוכן');return;}
-  const data={name,icon:pickedIco,startDate:start,endDate:end||null,branchIds:[...csvIds],network:mNet||'',status:'open',updatedBy:CU.email,updatedAt:Date.now()};
+  const data={name,icon:pickedIco,startDate:start,endDate:end||null,branchIds:[...csvIds],network:mNet||'',status:'open',elements:elements,updatedBy:CU.email,updatedAt:Date.now()};
   try{
     if(editId){await window.FB.updateDoc(window.FB.doc(window.DB,'activities',editId),data);}
     else{data.createdBy=CU.email;data.createdAt=Date.now();await window.FB.addDoc(window.FB.collection(window.DB,'activities'),data);}
@@ -1132,7 +1180,7 @@ function renderHistory(){
     out+='<div style="font-size:12px;font-weight:700;color:var(--gray3);letter-spacing:.5px;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--gray2)">'+date+'</div>';
     rpts.forEach(function(r){
       out+='<div class="rc" style="margin-bottom:8px">';
-      out+='<img class="rc-img" src="'+r.img+'" loading="lazy" style="cursor:pointer" onclick="openLB(this.src,this.dataset.info)" data-info="'+((r.branchName||'').replace(/"/g,'')+' · '+(r.activityName||'')).replace(/"/g,'')+'" />';
+      out+=rcImgHtml(r);
       out+='<div class="rc-info">';
       out+='<div class="rc-act">'+(r.activityIcon||'📋')+' '+(r.activityName||'—')+'</div>';
       out+='<div class="rc-br">'+(r.branchName||'—')+(r.branchNum?' (#'+r.branchNum+')':'')+'</div>';
@@ -1183,16 +1231,20 @@ async function downloadHistImages(){
     const zip=new JSZip();
     const used={};
     f.forEach(r=>{
-      const m=/^data:(image\/[a-zA-Z+]+);base64,(.*)$/.exec(r.img||'');
-      if(!m)return;
-      const ext=(m[1].split('/')[1]||'jpg').replace('jpeg','jpg');
-      const data=m[2];
-      let base=sanitizeName(r.branchName||'סניף');
-      if(r.branchNum)base+=' ('+r.branchNum+')';
-      let name=base;let n=1;
-      while(used[name+'.'+ext]){n++;name=base+'_'+n;}
-      used[name+'.'+ext]=true;
-      zip.file(name+'.'+ext,data,{base64:true});
+      const imgs=(r.images&&r.images.length)?r.images:[{label:'',img:r.img}];
+      imgs.forEach(im=>{
+        const m=/^data:(image\/[a-zA-Z+]+);base64,(.*)$/.exec(im.img||'');
+        if(!m)return;
+        const ext=(m[1].split('/')[1]||'jpg').replace('jpeg','jpg');
+        const data=m[2];
+        let base=sanitizeName(r.branchName||'סניף');
+        if(r.branchNum)base+=' ('+r.branchNum+')';
+        if(im.label)base+=' - '+sanitizeName(im.label);
+        let name=base;let n=1;
+        while(used[name+'.'+ext]){n++;name=base+'_'+n;}
+        used[name+'.'+ext]=true;
+        zip.file(name+'.'+ext,data,{base64:true});
+      });
     });
     const blob=await zip.generateAsync({type:'blob'});
     const url=URL.createObjectURL(blob);
@@ -1434,6 +1486,14 @@ async function deleteHistRpt(id, e){
   }catch(err){alert('שגיאה: '+err.message);}
 }
 function fmtD(d){if(!d)return'—';const[y,m,day]=d.split('-');return day+'.'+m+'.'+y;}
+function rcImgHtml(r){
+  if(r.images&&r.images.length>1){
+    return '<div style="width:86px;min-width:86px;height:86px;display:grid;grid-template-columns:1fr 1fr;gap:1px;overflow:hidden;border-radius:0">'+
+      r.images.map(im=>'<img src="'+im.img+'" loading="lazy" style="width:100%;height:100%;object-fit:cover;cursor:pointer" onclick="openLB(\''+im.img+'\',\''+((r.branchName||'')+' · '+(im.label||'')).replace(/'/g,'')+'\')" />').join('')+
+      '</div>';
+  }
+  return '<img class="rc-img" src="'+r.img+'" loading="lazy" style="cursor:pointer" onclick="openLB(this.src,this.dataset.info)" data-info="'+((r.branchName||'').replace(/"/g,'')+' · '+(r.activityName||'')).replace(/"/g,'')+'" />';
+}
 window.addEventListener('fb-ready',()=>console.log('✅ Firebase'));
 </script>
 
