@@ -4,6 +4,7 @@
 
 
 
+
 <!DOCTYPE html>
 <!-- v22 -->
 <html lang="he" dir="rtl"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -304,6 +305,29 @@ input,select,textarea,button{font-family:'Heebo',sans-serif}
           <div style="font-size:15px;font-weight:700;margin-bottom:12px">🔐 ניהול סיסמאות</div>
           <div id="passwordAdminList"></div>
           <button onclick="savePasswords()" style="margin-top:10px;width:100%;padding:10px;background:var(--pink);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:Heebo,sans-serif">💾 שמור סיסמאות</button>
+        </div>
+
+        <!-- User Management -->
+        <div class="acard" style="margin-bottom:16px">
+          <div style="font-size:15px;font-weight:700;margin-bottom:12px">👥 ניהול משתמשים</div>
+          <div id="userMgmtList"></div>
+          <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--gray2)">
+            <div style="font-size:13px;font-weight:700;margin-bottom:8px">➕ הוסף משתמש חדש</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+              <input class="f-in" id="newUserName" placeholder="שם מלא" style="margin:0;font-size:13px"/>
+              <input class="f-in" id="newUserEmail" placeholder="אימייל (@alpa-cosmetics.co.il)" style="margin:0;font-size:13px"/>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+              <select class="f-in" id="newUserRole" style="margin:0;font-size:13px">
+                <option value="agent">סוכן</option>
+                <option value="supervisor">מפקחת</option>
+                <option value="area_manager">מנהל אזור</option>
+                <option value="admin">מנהל ראשי</option>
+              </select>
+              <input class="f-in" id="newUserPass" placeholder="סיסמא" style="margin:0;font-size:13px"/>
+            </div>
+            <button onclick="addNewUser()" style="width:100%;padding:10px;background:var(--pink);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:Heebo,sans-serif">➕ הוסף משתמש</button>
+          </div>
         </div>
       </div>
 
@@ -823,9 +847,17 @@ async function doLogin(){
   const email=document.getElementById('lEmail').value.trim().toLowerCase();
   const pass=document.getElementById('lPass').value.trim();
   const err=document.getElementById('lerr');
-  const u=USERS[email];
-  if(!email||!u){err.style.display='block';err.textContent=!email?'נא להזין אימייל':'אימייל לא מזוהה במערכת';return;}
+  if(!email){err.style.display='block';err.textContent='נא להזין אימייל';return;}
   if(!pass){err.style.display='block';err.textContent='נא להזין סיסמא';return;}
+  // טען משתמשים נוספים מ-Firebase לפני הבדיקה
+  if(window.DB){
+    try{
+      const extraSnap=await window.FB.getDoc(window.FB.doc(window.DB,'config','extraUsers'));
+      if(extraSnap.exists())Object.assign(USERS,extraSnap.data()||{});
+    }catch(e){}
+  }
+  const u=USERS[email];
+  if(!u){err.style.display='block';err.textContent='אימייל לא מזוהה במערכת';return;}
   // Check password from Firebase
   try{
     if(!window.DB){err.style.display='block';err.textContent='מערכת לא מוכנה, נסה שוב';return;}
@@ -2087,7 +2119,72 @@ async function initPasswords() {
     const snap = await window.FB.getDoc(window.FB.doc(window.DB,'config','passwords'));
     if(snap.exists()) userPasswords = snap.data() || {};
   } catch(e) { userPasswords = {}; }
+  // טען משתמשים נוספים מ-Firebase
+  try {
+    const snap2 = await window.FB.getDoc(window.FB.doc(window.DB,'config','extraUsers'));
+    if(snap2.exists()){
+      const extra = snap2.data() || {};
+      Object.assign(USERS, extra);
+    }
+  } catch(e) {}
   renderPasswordAdmin();
+  renderUserMgmt();
+}
+
+function renderUserMgmt() {
+  const container = document.getElementById('userMgmtList');
+  if(!container) return;
+  const RL_HE = {admin:'מנהל ראשי', area_manager:'מנהל אזור', agent:'סוכן', supervisor:'מפקחת'};
+  container.innerHTML = Object.entries(USERS).map(([email, u]) =>
+    '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:8px;background:var(--gray);border-radius:8px">' +
+    '<div style="flex:1"><div style="font-size:13px;font-weight:600">' + u.name + '</div>' +
+    '<div style="font-size:11px;color:var(--gray3)">' + email + ' · ' + (RL_HE[u.role]||u.role) + '</div></div>' +
+    '<button onclick="deleteUser(\'' + email + '\')" style="background:none;border:1px solid #fca5a5;color:#dc2626;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer;font-family:Heebo,sans-serif">🗑️ מחק</button>' +
+    '</div>'
+  ).join('');
+}
+
+async function addNewUser() {
+  const name = document.getElementById('newUserName').value.trim();
+  const email = document.getElementById('newUserEmail').value.trim().toLowerCase();
+  const role = document.getElementById('newUserRole').value;
+  const pass = document.getElementById('newUserPass').value.trim();
+  if(!name||!email||!pass){alert('נא למלא את כל השדות');return;}
+  if(!email.includes('@')){alert('אימייל לא תקין');return;}
+  if(USERS[email]){alert('משתמש עם אימייל זה כבר קיים');return;}
+  USERS[email]={name,role};
+  userPasswords[email]=pass;
+  try{
+    // שמור extraUsers
+    const extraSnap = await window.FB.getDoc(window.FB.doc(window.DB,'config','extraUsers'));
+    const extra = extraSnap.exists() ? extraSnap.data() : {};
+    extra[email]={name,role};
+    await window.FB.setDoc(window.FB.doc(window.DB,'config','extraUsers'), extra);
+    // שמור סיסמא
+    await window.FB.setDoc(window.FB.doc(window.DB,'config','passwords'), userPasswords);
+    document.getElementById('newUserName').value='';
+    document.getElementById('newUserEmail').value='';
+    document.getElementById('newUserPass').value='';
+    renderPasswordAdmin();
+    renderUserMgmt();
+    alert('✅ המשתמש נוסף!');
+  }catch(e){alert('שגיאה: '+e.message);}
+}
+
+async function deleteUser(email) {
+  if(!confirm('למחוק את המשתמש ' + (USERS[email]?.name||email) + '?')) return;
+  delete USERS[email];
+  delete userPasswords[email];
+  try{
+    const extraSnap = await window.FB.getDoc(window.FB.doc(window.DB,'config','extraUsers'));
+    const extra = extraSnap.exists() ? extraSnap.data() : {};
+    delete extra[email];
+    await window.FB.setDoc(window.FB.doc(window.DB,'config','extraUsers'), extra);
+    await window.FB.setDoc(window.FB.doc(window.DB,'config','passwords'), userPasswords);
+    renderPasswordAdmin();
+    renderUserMgmt();
+    alert('✅ המשתמש נמחק!');
+  }catch(e){alert('שגיאה: '+e.message);}
 }
 
 function renderPasswordAdmin() {
